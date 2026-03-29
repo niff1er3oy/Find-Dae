@@ -50,6 +50,13 @@ function IconSparkles({ className = "" }: { className?: string }) {
     </svg>
   );
 }
+function IconHeart({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </svg>
+  );
+}
 function IconMousePointer({ className = "" }: { className?: string }) {
   return (
     <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -67,9 +74,9 @@ function IconArrowRight({ className = "" }: { className?: string }) {
 function IconMenu({ className = "" }: { className?: string }) {
   return (
     <svg className={className} width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-       <line x1="3" y1="12" x2="21" y2="12" />
-       <line x1="3" y1="6" x2="21" y2="6" />
-       <line x1="3" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   );
 }
@@ -120,7 +127,7 @@ export default function Home() {
         loop: true,
         ease: 'inOutSine'
       });
-      
+
       animate(scannerImageRef.current, {
         rotate: [-3, 3],
         duration: 4000,
@@ -146,28 +153,28 @@ export default function Home() {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const target = entry.target;
-          
+
           if (target.id === 'roles-section') {
-             animate('.role-card', {
-               opacity: [0, 1],
-               translateY: [60, 0],
-               rotate: [utils.random(-5, 5), 0],
-               delay: stagger(150),
-               duration: 1000,
-               ease: 'spring(1, 80, 12, 0)'
-             });
-             observer.unobserve(target);
+            animate('.role-card', {
+              opacity: [0, 1],
+              translateY: [60, 0],
+              rotate: [utils.random(-5, 5), 0],
+              delay: stagger(150),
+              duration: 1000,
+              ease: 'spring(1, 80, 12, 0)'
+            });
+            observer.unobserve(target);
           }
-          
+
           if (target.id === 'features-section') {
-             animate('.feature-item', {
-               opacity: [0, 1],
-               scale: [0.8, 1],
-               delay: stagger(100),
-               duration: 1000,
-               ease: 'spring(1, 80, 12, 0)'
-             });
-             observer.unobserve(target);
+            animate('.feature-item', {
+              opacity: [0, 1],
+              scale: [0.8, 1],
+              delay: stagger(100),
+              duration: 1000,
+              ease: 'spring(1, 80, 12, 0)'
+            });
+            observer.unobserve(target);
           }
         }
       });
@@ -189,7 +196,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-hidden text-slate-800">
-      
+
       {/* ───── Playful Background Blobs ───── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
         <div className="bg-bubble absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] max-w-[500px] bg-accent-peach/40 rounded-full blur-3xl animate-blob" />
@@ -200,8 +207,8 @@ export default function Home() {
       {/* ───── Floating Floating Pill Navbar ───── */}
       <div className="fixed top-4 inset-x-4 sm:inset-x-6 flex justify-center z-50 pointer-events-none">
         <nav className="w-full max-w-5xl bg-white/90 backdrop-blur-xl border-4 border-white pointer-events-auto rounded-full shadow-[0_10px_30px_rgba(255,140,66,0.1)] px-6 py-3 flex items-center justify-between transition-all hover:shadow-[0_15px_40px_rgba(255,140,66,0.15)]">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="flex items-center gap-2 group"
             onClick={(e) => {
               if (window.location.pathname === '/') {
@@ -211,10 +218,10 @@ export default function Home() {
             }}
           >
             <div className="w-10 h-10 bg-accent-orange rounded-full flex items-center justify-center text-white shadow-md transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-              <IconSmile className="w-6 h-6" />
+              <IconSearch className="w-6 h-6" />
             </div>
             <span className="text-xl font-extrabold tracking-tight text-slate-800">
-              Find<span className="text-accent-orange">Dae!</span>
+              Find<span className="text-accent-orange"> Dae!</span>
             </span>
           </Link>
 
@@ -226,16 +233,16 @@ export default function Home() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-             <button className="px-5 py-2.5 rounded-full font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-               เข้าสู่ระบบ
-             </button>
-             <button className="bg-accent-orange text-white px-6 py-2.5 rounded-full font-bold shadow-[0_4px_0_#cc5500] hover:-translate-y-1 hover:shadow-[0_6px_0_#cc5500] active:translate-y-1 active:shadow-[0_0px_0_#cc5500] transition-all">
-               สมัครเลย!
-             </button>
+            <Link href="/login" className="px-5 py-2.5 rounded-full font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+              เข้าสู่ระบบ
+            </Link>
+            <Link href="/signup" className="flex items-center justify-center bg-accent-orange text-white px-6 py-2.5 rounded-full font-bold shadow-[0_4px_0_#cc5500] hover:-translate-y-1 hover:shadow-[0_6px_0_#cc5500] active:translate-y-1 active:shadow-[0_0px_0_#cc5500] transition-all">
+              สมัครเลย!
+            </Link>
           </div>
 
           {/* Mobile Menu Toggle */}
-          <button 
+          <button
             className="md:hidden flex items-center justify-center w-12 h-12 text-slate-600 rounded-full bg-slate-50 active:scale-95 transition-transform"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
@@ -246,23 +253,23 @@ export default function Home() {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="mobile-menu fixed inset-0 z-40 bg-white/95 backdrop-blur-2xl flex flex-col justify-center px-8 md:hidden">
-          <div className="mobile-links flex flex-col gap-8 text-3xl font-extrabold text-center">
+        <div className="mobile-menu fixed inset-0 z-40 bg-white/95 backdrop-blur-2xl flex flex-col justify-center px-8 md:hidden overflow-y-auto overscroll-contain">
+          <div className="mobile-links flex flex-col gap-8 text-3xl font-extrabold text-center my-auto py-12">
             <a href="#roles" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-orange">ฉันเป็นใคร?</a>
             <a href="#features-section" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-pink">ข้อดี</a>
             <a href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-yellow">ทำยังไง?</a>
-            <div className="h-2 w-16 bg-accent-peach rounded-full mx-auto my-4" />
-            <a href="#" className="text-2xl text-slate-500">เข้าสู่ระบบ</a>
-            <button className="bg-accent-orange text-white py-4 rounded-full shadow-[0_6px_0_#cc5500] w-full max-w-xs mx-auto active:translate-y-2 active:shadow-none transition-all">
+            <div className="h-2 w-16 bg-accent-peach rounded-full mx-auto my-4 shrink-0" />
+            <Link href="/login" onClick={() => setIsMenuOpen(false)} className="text-2xl text-slate-500 hover:text-accent-orange transition-colors">เข้าสู่ระบบ</Link>
+            <Link href="/signup" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center bg-accent-orange text-white py-4 rounded-full shadow-[0_6px_0_#cc5500] w-full max-w-xs mx-auto active:translate-y-2 active:shadow-none transition-all text-xl shrink-0">
               สมัครสมาชิกเลย!
-            </button>
+            </Link>
           </div>
         </div>
       )}
 
       {/* ───── Hero Area ───── */}
       <section className="relative pt-40 pb-20 sm:pt-48 sm:pb-32 px-6 flex flex-col items-center justify-center text-center min-h-[95vh] z-10">
-        
+
         <div className="hero-pop bg-white/60 border-2 border-white backdrop-blur-md px-4 py-2 rounded-full shadow-sm text-accent-orange font-bold text-sm mb-8 flex items-center gap-2">
           <IconSparkles className="w-4 h-4" /> ระบบ AI ช่วยค้นหารูปในงานอีเวนต์!
         </div>
@@ -271,9 +278,9 @@ export default function Home() {
           เลิกไถหารูปจนเมื่อยนิ้ว!
           <br className="hidden sm:block" />
           <span className="sm:hidden"> </span>
-          มาใช้ <span className="gradient-text-fun px-2">Find Dae</span> ดีกว่า 🎉
+          มาใช้ <span className="gradient-text-fun px-2">Find Dae</span> ดีกว่า <IconSparkles className="inline w-10 h-10 sm:w-12 sm:h-12 text-accent-yellow -mt-2 animate-bounce-slow" />
         </h1>
-        
+
         <p className="hero-pop mt-8 text-lg sm:text-2xl text-slate-500 font-medium max-w-2xl leading-relaxed">
           ตากล้องอัปโหลดรูปปุ๊บ ผู้เข้าร่วมแค่เซลฟี่ 1 รูปปั๊บ
           เราหาหน้าคุณเจอทันทีในเสี้ยววิ!
@@ -298,10 +305,10 @@ export default function Home() {
               <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-24 h-24 bg-[#ffdfc4] rounded-[40%] flex items-center justify-center shadow-sm">
                 <IconSmile className="w-12 h-12 text-slate-700 opacity-60" />
               </div>
-              
+
               {/* Scanning UI overlay */}
               <div className="absolute inset-x-4 top-[15%] bottom-[45%] border-4 border-dashed border-accent-orange/80 rounded-3xl" />
-              
+
               {/* The Laser */}
               <div ref={scanLineRef} className="absolute left-0 w-full top-0">
                 <div className="w-full h-2 bg-accent-orange rounded-full shadow-[0_0_20px_#ff8c42,0_0_10px_#ff8c42]" />
@@ -313,16 +320,16 @@ export default function Home() {
 
             {/* Floating Match Badges */}
             <div className="absolute -right-12 sm:-right-16 top-10 bg-white p-3 rounded-2xl shadow-xl animate-float-soft border-2 border-white rotate-6">
-               <div className="flex gap-2">
-                 <div className="w-12 h-12 bg-accent-yellow rounded-xl" />
-                 <div className="w-12 h-12 bg-accent-pink rounded-xl" />
-               </div>
-               <div className="mt-2 text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md text-center">เจอ +12 รูป!</div>
+              <div className="flex gap-2">
+                <div className="w-12 h-12 bg-accent-yellow rounded-xl" />
+                <div className="w-12 h-12 bg-accent-pink rounded-xl" />
+              </div>
+              <div className="mt-2 text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md text-center">เจอ +12 รูป!</div>
             </div>
 
             <div className="absolute -left-10 sm:-left-12 bottom-12 bg-white px-4 py-3 rounded-2xl shadow-xl animate-bounce-slow border-2 border-white -rotate-6 flex items-center gap-2">
-               <IconStar className="text-yellow-400 w-6 h-6 fill-yellow-400" />
-               <span className="font-extrabold text-slate-700">Matched 99.9%</span>
+              <IconStar className="text-yellow-400 w-6 h-6 fill-yellow-400" />
+              <span className="font-extrabold text-slate-700">Matched 99.9%</span>
             </div>
           </div>
         </div>
@@ -333,37 +340,39 @@ export default function Home() {
       <section id="roles" className="py-24 px-6 relative z-10">
         <div id="roles-section" className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4">ตกลงคุณมาในถานะอะไร? 🤔</h2>
+            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4 flex items-center justify-center gap-3">
+              ตกลงคุณมาในถานะอะไร? <IconSmile className="w-10 h-10 sm:w-12 sm:h-12 text-accent-orange" />
+            </h2>
             <p className="text-xl text-slate-500 font-medium">แบ่งเส้นสายงานชัดเจน เพื่อความลื่นไหลที่สุด!</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
             {/* Attendee */}
             <div className="role-card bubbly-card p-8 sm:p-10 flex flex-col items-center text-center opacity-0">
-               <div className="w-24 h-24 bg-gradient-to-br from-accent-pink to-pink-300 rounded-3xl mb-8 flex items-center justify-center text-white shadow-lg rotate-3 group-hover:rotate-12 transition-transform">
-                 <IconSmile className="w-12 h-12" />
-               </div>
-               <h3 className="text-3xl font-black text-slate-800 mb-4">สายโดนแอบถ่าย</h3>
-               <p className="text-lg text-slate-500 font-medium mb-8">
-                 เพิ่งกลับจากงานคอนเสิร์ต งานวิ่ง แต่งงานต่างๆ อยากหารูปตัวเองใช่มั้ย? อัพโหลดรูปเซลฟี่คุณ 1 รูป แล้วปล่อยให้เราหาให้เลย!
-               </p>
-               <button className="mt-auto w-full btn-primary btn-pink">
-                 เริ่มหารูปตัวเอง
-               </button>
+              <div className="w-24 h-24 bg-gradient-to-br from-accent-pink to-pink-300 rounded-3xl mb-8 flex items-center justify-center text-white shadow-lg rotate-3 group-hover:rotate-12 transition-transform">
+                <IconSmile className="w-12 h-12" />
+              </div>
+              <h3 className="text-3xl font-black text-slate-800 mb-4">สายโดนแอบถ่าย</h3>
+              <p className="text-lg text-slate-500 font-medium mb-8">
+                เพิ่งกลับจากงานคอนเสิร์ต งานวิ่ง แต่งงานต่างๆ อยากหารูปตัวเองใช่มั้ย? อัพโหลดรูปเซลฟี่คุณ 1 รูป แล้วปล่อยให้เราหาให้เลย!
+              </p>
+              <button className="mt-auto w-full btn-primary btn-pink">
+                เริ่มหารูปตัวเอง
+              </button>
             </div>
 
             {/* Photographer */}
             <div className="role-card bubbly-card p-8 sm:p-10 flex flex-col items-center text-center opacity-0 delay-100">
-               <div className="w-24 h-24 bg-gradient-to-br from-accent-orange to-accent-yellow rounded-3xl mb-8 flex items-center justify-center text-white shadow-lg -rotate-3 group-hover:-rotate-12 transition-transform">
-                 <IconCamera className="w-12 h-12" />
-               </div>
-               <h3 className="text-3xl font-black text-slate-800 mb-4">สายตากล้องกดแชะ</h3>
-               <p className="text-lg text-slate-500 font-medium mb-8">
-                 อัพโหลดรูปแบบเหมาแผง! โยนรูปทั้งหมดเข้าอัลบั้ม ปล่อยให้ระบบเราจัดการ AI แท็กหน้าให้ลูกค้ามาค้นหาเจอสบายๆ
-               </p>
-               <button className="mt-auto w-full btn-primary cursor-pointer">
-                 จัดการรูปถ่ายของฉัน
-               </button>
+              <div className="w-24 h-24 bg-gradient-to-br from-accent-orange to-accent-yellow rounded-3xl mb-8 flex items-center justify-center text-white shadow-lg -rotate-3 group-hover:-rotate-12 transition-transform">
+                <IconCamera className="w-12 h-12" />
+              </div>
+              <h3 className="text-3xl font-black text-slate-800 mb-4">สายตากล้องกดแชะ</h3>
+              <p className="text-lg text-slate-500 font-medium mb-8">
+                อัพโหลดรูปแบบเหมาแผง! โยนรูปทั้งหมดเข้าอัลบั้ม ปล่อยให้ระบบเราจัดการ AI แท็กหน้าให้ลูกค้ามาค้นหาเจอสบายๆ
+              </p>
+              <button className="mt-auto w-full btn-primary cursor-pointer">
+                จัดการรูปถ่ายของฉัน
+              </button>
             </div>
           </div>
         </div>
@@ -371,97 +380,103 @@ export default function Home() {
 
       {/* ───── 3 Steps Section (How it works) ───── */}
       <section id="how-it-works" className="py-24 px-6 relative z-10 bg-white/50 border-y-4 border-white backdrop-blur-sm">
-         <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-16">มันทำงานยังไงน้าา? 🧐</h2>
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-16 flex items-center justify-center gap-3">
+            มันทำงานยังไงน้าา? <IconSearch className="w-10 h-10 sm:w-12 sm:h-12 text-accent-peach" />
+          </h2>
 
-            <div className="grid sm:grid-cols-3 gap-12 relative">
-               {/* Decorative connecting line for desktop */}
-               <div className="hidden sm:block absolute top-[48px] left-[15%] right-[15%] h-2 bg-slate-100 rounded-full z-[-1]">
-                 <div className="h-full bg-accent-orange/30 w-1/2 animate-shimmer rounded-full" />
-               </div>
-
-               <div className="flex flex-col items-center">
-                 <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-orange shadow-xl mb-6 relative">
-                   1
-                   <div className="absolute -top-3 -right-3 bg-accent-yellow w-8 h-8 rounded-full border-2 border-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold text-slate-800 mb-3">เลือกลิงก์อัลบั้ม</h3>
-                 <p className="text-slate-500 font-medium max-w-[250px]">จิ้มลิงก์ที่ตากล้องหรือแอดมินงานแจกให้</p>
-               </div>
-
-               <div className="flex flex-col items-center">
-                 <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-pink shadow-xl mb-6 relative">
-                   2
-                   <div className="absolute -top-3 -right-3 bg-accent-peach w-8 h-8 rounded-full border-2 border-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold text-slate-800 mb-3">ยิ้มแล้วเซลฟี่ซักแชะ!</h3>
-                 <p className="text-slate-500 font-medium max-w-[250px]">ส่งรูปหน้าตัวเองชัดๆ ให้ระบบรู้จัก</p>
-               </div>
-
-               <div className="flex flex-col items-center">
-                 <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-blue shadow-xl mb-6 relative">
-                   3
-                   <div className="absolute -top-3 -right-3 bg-green-400 w-8 h-8 rounded-full border-2 border-white" />
-                 </div>
-                 <h3 className="text-2xl font-bold text-slate-800 mb-3">เซฟรูปลงเครื่องไปเลย!</h3>
-                 <p className="text-slate-500 font-medium max-w-[250px]">AI จะคัดรูปที่มีหน้าคุณทั้งหมดมาโชว์ทันที</p>
-               </div>
+          <div className="grid sm:grid-cols-3 gap-12 relative">
+            {/* Decorative connecting line for desktop */}
+            <div className="hidden sm:block absolute top-[48px] left-[15%] right-[15%] h-2 bg-slate-100 rounded-full z-[-1]">
+              <div className="h-full bg-accent-orange/30 w-1/2 animate-shimmer rounded-full" />
             </div>
-         </div>
+
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-orange shadow-xl mb-6 relative">
+                1
+                <div className="absolute -top-3 -right-3 bg-accent-yellow w-8 h-8 rounded-full border-2 border-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-3">เลือกลิงก์อัลบั้ม</h3>
+              <p className="text-slate-500 font-medium max-w-[250px]">จิ้มลิงก์ที่ตากล้องหรือแอดมินงานแจกให้</p>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-pink shadow-xl mb-6 relative">
+                2
+                <div className="absolute -top-3 -right-3 bg-accent-peach w-8 h-8 rounded-full border-2 border-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-3">ยิ้มแล้วเซลฟี่ซักแชะ!</h3>
+              <p className="text-slate-500 font-medium max-w-[250px]">ส่งรูปหน้าตัวเองชัดๆ ให้ระบบรู้จัก</p>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-blue shadow-xl mb-6 relative">
+                3
+                <div className="absolute -top-3 -right-3 bg-green-400 w-8 h-8 rounded-full border-2 border-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-3">เซฟรูปลงเครื่องไปเลย!</h3>
+              <p className="text-slate-500 font-medium max-w-[250px]">AI จะคัดรูปที่มีหน้าคุณทั้งหมดมาโชว์ทันที</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ───── Features ───── */}
       <section id="features-section" className="py-24 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4">จุดเด่นที่ทำให้ใครๆ ก็หลงรัก 💕</h2>
+            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4 flex items-center justify-center gap-3">
+              จุดเด่นที่ทำให้ใครๆ ก็หลงรัก <IconHeart className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 fill-pink-400 animate-pulse" />
+            </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-10">
-             <div className="feature-item opacity-0">
-               <FeatureBlob 
-                 title="แม่นยำเวอร์ๆ" 
-                 desc="แก่นของระบบใช้ Face Recognition AI ตัวท็อป หน้าสั่นหันข้างก็ยังรอด!" 
-                 icon={<IconScan className="w-10 h-10" />} 
-                 colorClass="bg-accent-orange" 
-                 rotate="-rotate-6"
-               />
-             </div>
-             <div className="feature-item opacity-0">
-               <FeatureBlob 
-                 title="เร็วกว่าเน็ตบ้าน" 
-                 desc="อัพโหลดรูปแสนใบ หรือค้นหาหน้าเป็นหมื่น ก็ประมวลผลเสร็จในพริบตาเดียว" 
-                 icon={<IconSparkles className="w-10 h-10" />} 
-                 colorClass="bg-accent-pink"
-                 rotate="rotate-3"
-               />
-             </div>
-             <div className="feature-item opacity-0">
-               <FeatureBlob 
-                 title="สิทธิส่วนบุคคลยืนหนึ่ง" 
-                 desc="รูปเซลฟี่ค้นหาคุณจะไม่ถูกเก็บไว้ เราลบทันทีหลังจากทำภารกิจส่งรูปให้คุณเสร็จ!" 
-                 icon={<IconSmile className="w-10 h-10" />} 
-                 colorClass="bg-accent-yellow text-orange-600"
-                 rotate="-rotate-3"
-               />
-             </div>
+            <div className="feature-item opacity-0">
+              <FeatureBlob
+                title="แม่นยำเวอร์ๆ"
+                desc="แก่นของระบบใช้ Face Recognition AI ตัวท็อป หน้าสั่นหันข้างก็ยังรอด!"
+                icon={<IconScan className="w-10 h-10" />}
+                colorClass="bg-accent-orange"
+                rotate="-rotate-6"
+              />
+            </div>
+            <div className="feature-item opacity-0">
+              <FeatureBlob
+                title="เร็วกว่าเน็ตบ้าน"
+                desc="อัพโหลดรูปแสนใบ หรือค้นหาหน้าเป็นหมื่น ก็ประมวลผลเสร็จในพริบตาเดียว"
+                icon={<IconSparkles className="w-10 h-10" />}
+                colorClass="bg-accent-pink"
+                rotate="rotate-3"
+              />
+            </div>
+            <div className="feature-item opacity-0">
+              <FeatureBlob
+                title="สิทธิส่วนบุคคลยืนหนึ่ง"
+                desc="รูปเซลฟี่ค้นหาคุณจะไม่ถูกเก็บไว้ เราลบทันทีหลังจากทำภารกิจส่งรูปให้คุณเสร็จ!"
+                icon={<IconSmile className="w-10 h-10" />}
+                colorClass="bg-accent-yellow text-orange-600"
+                rotate="-rotate-3"
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* ───── Footer CTA ───── */}
       <section className="py-24 px-6 relative z-10">
-         <div className="max-w-4xl mx-auto bubbly-card bg-white p-12 text-center relative overflow-hidden">
-            <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-accent-yellow/50 rounded-full blur-2xl" />
-            <div className="absolute bottom-[-50px] left-[-50px] w-40 h-40 bg-accent-pink/50 rounded-full blur-2xl" />
-            
-            <div className="relative z-10">
-              <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-8">พร้อมจะลุยกันแล้วหรือยังแกรร! 🚀</h2>
-              <button className="btn-primary text-xl px-12 py-5 shadow-[0_10px_0_#cc5500]">
-                ไปหน้าสมัครสมาชิกกันเลย
-              </button>
-            </div>
-         </div>
+        <div className="max-w-4xl mx-auto bubbly-card bg-white p-12 text-center relative overflow-hidden">
+          <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-accent-yellow/50 rounded-full blur-2xl" />
+          <div className="absolute bottom-[-50px] left-[-50px] w-40 h-40 bg-accent-pink/50 rounded-full blur-2xl" />
+
+          <div className="relative z-10">
+            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-8 flex items-center justify-center gap-3">
+              พร้อมจะลุยกันแล้วหรือยังแกรร! <IconArrowRight className="w-10 h-10 sm:w-12 sm:h-12 text-accent-orange" />
+            </h2>
+            <Link href="/signup" className="inline-flex items-center justify-center btn-primary text-xl px-12 py-5 shadow-[0_10px_0_#cc5500]">
+              ไปหน้าสมัครสมาชิกกันเลย
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* ───── Footer ───── */}
