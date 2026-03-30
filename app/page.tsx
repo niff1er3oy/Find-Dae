@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { animate, stagger, utils } from "animejs";
+import { getUserAction, logoutAction } from "@/app/actions/auth";
 
 /* ─── Fun Rounded Icons (Feather/Lucide style) ─── */
 function IconSmile({ className = "" }: { className?: string }) {
@@ -103,7 +104,6 @@ function FeatureBlob({ title, desc, icon, colorClass, rotate }: { title: string,
 }
 
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const scannerImageRef = useRef<HTMLDivElement>(null);
   const scanLineRef = useRef<HTMLDivElement>(null);
 
@@ -182,17 +182,8 @@ export default function Home() {
 
     document.querySelectorAll('#roles-section, #features-section').forEach(el => observer.observe(el));
 
-    // Handle mobile menu toggle animation natively via anime.js
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-      animate('.mobile-menu', { opacity: [0, 1], translateY: [-20, 0], duration: 300, ease: 'outQuad' });
-      animate('.mobile-links > a', { opacity: [0, 1], translateY: [20, 0], delay: stagger(50), duration: 400, ease: 'outBack' });
-    } else {
-      document.body.style.overflow = '';
-    }
-
     return () => observer.disconnect();
-  }, [isMenuOpen]);
+  }, []);
 
   return (
     <div className="relative min-h-screen overflow-hidden text-slate-800">
@@ -204,68 +195,7 @@ export default function Home() {
         <div className="bg-bubble absolute bottom-[-5%] left-[10%] w-[30vw] h-[30vw] max-w-[600px] bg-accent-pink/30 rounded-full blur-3xl animate-blob" style={{ animationDelay: '4s' }} />
       </div>
 
-      {/* ───── Floating Floating Pill Navbar ───── */}
-      <div className="fixed top-4 inset-x-4 sm:inset-x-6 flex justify-center z-50 pointer-events-none">
-        <nav className="w-full max-w-5xl bg-white/90 backdrop-blur-xl border-4 border-white pointer-events-auto rounded-full shadow-[0_10px_30px_rgba(255,140,66,0.1)] px-6 py-3 flex items-center justify-between transition-all hover:shadow-[0_15px_40px_rgba(255,140,66,0.15)]">
-          <Link
-            href="/"
-            className="flex items-center gap-2 group"
-            onClick={(e) => {
-              if (window.location.pathname === '/') {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-          >
-            <div className="w-10 h-10 bg-accent-orange rounded-full flex items-center justify-center text-white shadow-md transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-              <IconSearch className="w-6 h-6" />
-            </div>
-            <span className="text-xl font-extrabold tracking-tight text-slate-800">
-              Find<span className="text-accent-orange"> Dae!</span>
-            </span>
-          </Link>
-
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8 font-bold text-slate-500">
-            <a href="#roles" className="hover:text-accent-orange transition-colors">ฉันเป็นใคร?</a>
-            <a href="#features-section" className="hover:text-accent-pink transition-colors">ข้อดี</a>
-            <a href="#how-it-works" className="hover:text-accent-yellow transition-colors">ทำยังไง?</a>
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/login" className="px-5 py-2.5 rounded-full font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-              เข้าสู่ระบบ
-            </Link>
-            <Link href="/signup" className="flex items-center justify-center bg-accent-orange text-white px-6 py-2.5 rounded-full font-bold shadow-[0_4px_0_#cc5500] hover:-translate-y-1 hover:shadow-[0_6px_0_#cc5500] active:translate-y-1 active:shadow-[0_0px_0_#cc5500] transition-all">
-              สมัครเลย!
-            </Link>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            className="md:hidden flex items-center justify-center w-12 h-12 text-slate-600 rounded-full bg-slate-50 active:scale-95 transition-transform"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <IconClose className="w-6 h-6" /> : <IconMenu className="w-6 h-6" />}
-          </button>
-        </nav>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      {isMenuOpen && (
-        <div className="mobile-menu fixed inset-0 z-40 bg-white/95 backdrop-blur-2xl flex flex-col justify-center px-8 md:hidden overflow-y-auto overscroll-contain">
-          <div className="mobile-links flex flex-col gap-8 text-3xl font-extrabold text-center my-auto py-12">
-            <a href="#roles" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-orange">ฉันเป็นใคร?</a>
-            <a href="#features-section" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-pink">ข้อดี</a>
-            <a href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-yellow">ทำยังไง?</a>
-            <div className="h-2 w-16 bg-accent-peach rounded-full mx-auto my-4 shrink-0" />
-            <Link href="/login" onClick={() => setIsMenuOpen(false)} className="text-2xl text-slate-500 hover:text-accent-orange transition-colors">เข้าสู่ระบบ</Link>
-            <Link href="/signup" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center bg-accent-orange text-white py-4 rounded-full shadow-[0_6px_0_#cc5500] w-full max-w-xs mx-auto active:translate-y-2 active:shadow-none transition-all text-xl shrink-0">
-              สมัครสมาชิกเลย!
-            </Link>
-          </div>
-        </div>
-      )}
+      {/* Navbar is now inherited from app/layout.tsx */}
 
       {/* ───── Hero Area ───── */}
       <section className="relative pt-40 pb-20 sm:pt-48 sm:pb-32 px-6 flex flex-col items-center justify-center text-center min-h-[95vh] z-10">
@@ -282,7 +212,7 @@ export default function Home() {
         </h1>
 
         <p className="hero-pop mt-8 text-lg sm:text-2xl text-slate-500 font-medium max-w-2xl leading-relaxed">
-          ตากล้องอัปโหลดรูปปุ๊บ ผู้เข้าร่วมแค่เซลฟี่ 1 รูปปั๊บ
+          ตากล้องอัปโหลดรูปปุ๊บ ผู้เข้าร่วมแค่เซลฟี่ 3 รูปปั๊บ
           เราหาหน้าคุณเจอทันทีในเสี้ยววิ!
         </p>
 
@@ -336,14 +266,17 @@ export default function Home() {
 
       </section>
 
-      {/* ───── Roles Section ───── */}
+      {/* ───── Roles Section (What is this website?) ───── */}
       <section id="roles" className="py-24 px-6 relative z-10">
         <div id="roles-section" className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4 flex items-center justify-center gap-3">
-              ตกลงคุณมาในถานะอะไร? <IconSmile className="w-10 h-10 sm:w-12 sm:h-12 text-accent-orange" />
+            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              Find Dae คือเว็บไซต์อะไร? <IconSparkles className="w-10 h-10 sm:w-12 sm:h-12 text-accent-orange" />
             </h2>
-            <p className="text-xl text-slate-500 font-medium">แบ่งเส้นสายงานชัดเจน เพื่อความลื่นไหลที่สุด!</p>
+            <p className="text-xl text-slate-500 font-bold max-w-3xl mx-auto leading-relaxed">
+              เราคือ <span className="text-accent-pink font-black">ตัวช่วยค้นหารูปภาพจากงานอีเวนต์ด้วย AI จดจำใบหน้าอันชาญฉลาด!</span><br />
+              ระบบถูกออกแบบแยกให้สอดคล้องกับผู้ใช้งาน 2 หมวดหมู่ได้อย่างลงตัว
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
@@ -354,7 +287,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-black text-slate-800 mb-4">สายโดนแอบถ่าย</h3>
               <p className="text-lg text-slate-500 font-medium mb-8">
-                เพิ่งกลับจากงานคอนเสิร์ต งานวิ่ง แต่งงานต่างๆ อยากหารูปตัวเองใช่มั้ย? อัพโหลดรูปเซลฟี่คุณ 1 รูป แล้วปล่อยให้เราหาให้เลย!
+                เพิ่งกลับจากงานคอนเสิร์ต งานวิ่ง แต่งงานต่างๆ อยากหารูปตัวเองใช่มั้ย? อัพโหลดรูปเซลฟี่คุณ 3 รูป แล้วปล่อยให้เราหาให้เลย!
               </p>
               <button className="mt-auto w-full btn-primary btn-pink">
                 เริ่มหารูปตัวเอง
@@ -378,8 +311,49 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ───── Features ───── */}
+      <section id="features-section" className="py-24 px-6 relative z-10 bg-white/50 border-y-4 border-white backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4 flex items-center justify-center gap-3">
+              จุดเด่นที่ทำให้ใครๆ ก็หลงรัก <IconHeart className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 fill-pink-400 animate-pulse" />
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-10">
+            <div className="feature-item opacity-0">
+              <FeatureBlob
+                title="แม่นยำเวอร์ๆ"
+                desc="แก่นของระบบใช้ Face Recognition AI ตัวท็อป หน้าสั่นหันข้างก็ยังรอด!"
+                icon={<IconScan className="w-10 h-10" />}
+                colorClass="bg-accent-orange"
+                rotate="-rotate-6"
+              />
+            </div>
+            <div className="feature-item opacity-0">
+              <FeatureBlob
+                title="เร็วกว่าเน็ตบ้าน"
+                desc="อัพโหลดรูปแสนใบ หรือค้นหาหน้าเป็นหมื่น ก็ประมวลผลเสร็จในพริบตาเดียว"
+                icon={<IconSparkles className="w-10 h-10" />}
+                colorClass="bg-accent-pink"
+                rotate="rotate-3"
+              />
+            </div>
+            <div className="feature-item opacity-0">
+              <FeatureBlob
+                title="สิทธิส่วนบุคคลยืนหนึ่ง"
+                desc="รูปเซลฟี่ค้นหาคุณจะไม่ถูกเก็บไว้ เราลบทันทีหลังจากทำภารกิจส่งรูปให้คุณเสร็จ!"
+                icon={<IconSmile className="w-10 h-10" />}
+                colorClass="bg-accent-yellow text-orange-600"
+                rotate="-rotate-3"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ───── 3 Steps Section (How it works) ───── */}
-      <section id="how-it-works" className="py-24 px-6 relative z-10 bg-white/50 border-y-4 border-white backdrop-blur-sm">
+      <section id="how-it-works" className="py-24 px-6 relative z-10">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-16 flex items-center justify-center gap-3">
             มันทำงานยังไงน้าา? <IconSearch className="w-10 h-10 sm:w-12 sm:h-12 text-accent-peach" />
@@ -416,47 +390,6 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold text-slate-800 mb-3">เซฟรูปลงเครื่องไปเลย!</h3>
               <p className="text-slate-500 font-medium max-w-[250px]">AI จะคัดรูปที่มีหน้าคุณทั้งหมดมาโชว์ทันที</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Features ───── */}
-      <section id="features-section" className="py-24 px-6 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4 flex items-center justify-center gap-3">
-              จุดเด่นที่ทำให้ใครๆ ก็หลงรัก <IconHeart className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 fill-pink-400 animate-pulse" />
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-10">
-            <div className="feature-item opacity-0">
-              <FeatureBlob
-                title="แม่นยำเวอร์ๆ"
-                desc="แก่นของระบบใช้ Face Recognition AI ตัวท็อป หน้าสั่นหันข้างก็ยังรอด!"
-                icon={<IconScan className="w-10 h-10" />}
-                colorClass="bg-accent-orange"
-                rotate="-rotate-6"
-              />
-            </div>
-            <div className="feature-item opacity-0">
-              <FeatureBlob
-                title="เร็วกว่าเน็ตบ้าน"
-                desc="อัพโหลดรูปแสนใบ หรือค้นหาหน้าเป็นหมื่น ก็ประมวลผลเสร็จในพริบตาเดียว"
-                icon={<IconSparkles className="w-10 h-10" />}
-                colorClass="bg-accent-pink"
-                rotate="rotate-3"
-              />
-            </div>
-            <div className="feature-item opacity-0">
-              <FeatureBlob
-                title="สิทธิส่วนบุคคลยืนหนึ่ง"
-                desc="รูปเซลฟี่ค้นหาคุณจะไม่ถูกเก็บไว้ เราลบทันทีหลังจากทำภารกิจส่งรูปให้คุณเสร็จ!"
-                icon={<IconSmile className="w-10 h-10" />}
-                colorClass="bg-accent-yellow text-orange-600"
-                rotate="-rotate-3"
-              />
             </div>
           </div>
         </div>

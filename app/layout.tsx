@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google"; // Using Nunito for a more rounded, playful look instead of Geist
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 const nunito = Nunito({
   variable: "--font-sans",
@@ -24,7 +25,10 @@ export default function RootLayout({
       lang="th"
       className={`${nunito.variable} h-full antialiased scroll-smooth scroll-pt-32`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }
