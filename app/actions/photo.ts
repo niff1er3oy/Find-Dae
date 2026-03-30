@@ -35,7 +35,7 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 
   try {
     // 4. เตรียมโฟลเดอร์สำหรับงานนี้
-    const eventPhotosDir = path.join(UPLOAD_DIR_BASE, eventId);
+    const eventPhotosDir = path.join(UPLOAD_DIR_BASE, String(eventId));
     await mkdir(eventPhotosDir, { recursive: true });
 
     // 5. เตรียมคำสั่ง SQL แบบ Multiple Insert เพื่อประสิทธิภาพการทำงาน
@@ -87,7 +87,7 @@ export async function callAIForReportAction(eventId: string, folder_path: string
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        event_id: eventId,
+        event_id: String(eventId),
         folder_path: folder_path
       })
     });
@@ -174,8 +174,8 @@ export async function callAISearchAction(eventId: string) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-         event_id: eventId,
-         member_id: user.id.toString()
+         event_id: String(eventId),
+         member_id: String(user.id)
       })
     });
     
