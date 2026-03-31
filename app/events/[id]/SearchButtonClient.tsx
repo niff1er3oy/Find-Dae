@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { checkAiServerAction, callAISearchAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
+import { AlertTriangle, Bot, Search } from "lucide-react";
 
 export default function SearchButtonClient({ eventId }: { eventId: string }) {
   const [isSearching, setIsSearching] = useState(false);
@@ -16,23 +17,23 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
     setErrorMsg("");
     setAiReport("");
     setIsSearching(true);
-    setProgressText(`ตรวจสอบหน้าด่าน AI Server... 🤖`);
+    setProgressText(`ตรวจสอบหน้าด่าน AI Server...`);
 
     // เคาะประตูเช็กเซิร์ฟเวอร์ก่อน
     const isAiUp = await checkAiServerAction();
     if (!isAiUp) {
-      setErrorMsg("AI Server ไม่ตอบสนอง หรือยังไม่ได้เปิดระบบ กรุณาเปิดระบบ AI ก่อนกดค้นหาครับ 🛑");
+      setErrorMsg("AI Server ไม่ตอบสนอง หรือยังไม่ได้เปิดระบบ กรุณาเปิดระบบ AI ก่อนกดค้นหาครับ");
       setIsSearching(false);
       return;
     }
 
     setIsWaitingReport(true);
-    setProgressText(`กำลังให้ AI สแกนใบหน้าและค้นหารูปของคุณ... 🤖🔍`);
+    setProgressText(`กำลังให้ AI สแกนใบหน้าและค้นหารูปของคุณ...`);
 
     try {
        const aiRes = await callAISearchAction(eventId);
        if (aiRes.success) {
-         setProgressText(`AI ค้นหาเสร็จสิ้น! 🎉`);
+         setProgressText(`AI ค้นหาเสร็จสิ้น!`);
          setAiReport(aiRes.report || "ค้นหาเสร็จสิ้น (AI ไม่ดรอปรีพอร์ตกลับมา)");
        } else {
          setErrorMsg("ข้อผิดพลาดจาก AI: " + aiRes.error);
@@ -51,14 +52,14 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
   return (
     <div className="w-full">
       {errorMsg && (
-         <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-600 font-bold border-2 border-red-200 animate-pulse">
-           ⚠️ {errorMsg}
+         <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-600 font-bold border-2 border-red-200 animate-pulse flex items-center gap-2">
+           <AlertTriangle className="w-6 h-6" /> {errorMsg}
          </div>
       )}
 
       {aiReport && (
          <div className="mb-6 p-6 rounded-2xl bg-white text-slate-700 font-bold border-4 border-accent-peach shadow-xl relative animate-float-soft">
-           <div className="absolute -top-5 -right-5 text-4xl">🤖</div>
+           <div className="absolute -top-5 -right-5 bg-white p-2 border-2 border-slate-100 rounded-full shadow-md"><Bot className="w-8 h-8 text-accent-orange" /></div>
            <h4 className="text-xl font-black text-accent-orange mb-2">รายงานความสำเร็จจากการค้นหา (Report):</h4>
            <pre className="bg-slate-50 p-4 rounded-xl text-sm overflow-x-auto whitespace-pre-wrap font-mono text-slate-600 border-2 border-slate-100">
              {aiReport}
@@ -78,9 +79,9 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
       ) : (
         <button 
           onClick={handleSearchClick}
-          className="px-8 py-5 bg-accent-pink text-white font-black text-xl rounded-full shadow-[0_6px_0_#db2777] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all w-full text-center"
+          className="px-8 py-5 bg-accent-pink text-white font-black text-xl rounded-full shadow-[0_6px_0_#db2777] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all w-full flex items-center justify-center gap-3"
         >
-          หารูป 🔍
+          หารูป <Search className="w-6 h-6" />
         </button>
       )}
     </div>

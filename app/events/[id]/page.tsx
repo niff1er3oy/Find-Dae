@@ -6,6 +6,7 @@ import Link from "next/link";
 import UploadButtonClient from "./UploadButtonClient";
 import SearchButtonClient from "./SearchButtonClient";
 import PhotoGalleryClient from "./PhotoGalleryClient";
+import DeleteEventButtonClient from "./DeleteEventButtonClient";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -27,18 +28,18 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   }
 
   const photos = await getEventPhotosAction(id);
-  
+
   let myPhotos: any[] = [];
   let otherPhotos = photos;
 
   if (user.role === 'attendee') {
-     myPhotos = await getMyEventPhotosAction(id);
-     
-     // กรองรูปที่มีใน myPhotos ออกจาก otherPhotos (เพื่อไม่ให้แสดงรูปซ้ำ)
-     if (myPhotos.length > 0) {
-       const myPhotoIds = new Set(myPhotos.map(p => p.id));
-       otherPhotos = photos.filter((p: any) => !myPhotoIds.has(p.id));
-     }
+    myPhotos = await getMyEventPhotosAction(id);
+
+    // กรองรูปที่มีใน myPhotos ออกจาก otherPhotos (เพื่อไม่ให้แสดงรูปซ้ำ)
+    if (myPhotos.length > 0) {
+      const myPhotoIds = new Set(myPhotos.map(p => p.id));
+      otherPhotos = photos.filter((p: any) => !myPhotoIds.has(p.id));
+    }
   }
 
   return (
@@ -53,18 +54,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
       <div className="max-w-6xl mx-auto w-full relative z-10">
 
-        <Link href="/events" className="inline-flex items-center gap-2 font-bold text-slate-500 hover:text-accent-orange mb-8 transition-colors">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          กลับหน้ารวมงาน
-        </Link>
-
         {/* Event Header Banner */}
         <div className="bubbly-card p-4 sm:p-8 flex flex-col md:flex-row gap-8 mb-12 border-t-[8px] border-t-accent-yellow">
-          <div className="w-full md:w-1/3 h-72 md:h-auto rounded-[24px] overflow-hidden bg-slate-200 border-4 border-white flex-shrink-0 shadow-sm relative">
+          <div className="w-full md:w-[260px] aspect-[1/1.414] rounded-[24px] overflow-hidden bg-slate-200 border-4 border-white flex-shrink-0 shadow-sm relative">
             {event.poster ? (
-              <img src={`/api/event-image/${event.poster}`} alt={event.name} className="w-full h-full object-cover" />
+              <img src={`/api/event-image/${event.poster}`} alt={event.name} className="absolute inset-0 w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">ไม่มีโปสเตอร์</div>
+              <div className="absolute inset-0 flex items-center justify-center font-bold text-slate-400">ไม่มีโปสเตอร์</div>
             )}
           </div>
 
@@ -73,13 +69,18 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             <p className="text-lg sm:text-xl text-slate-500 font-medium mb-8 leading-relaxed whitespace-pre-line flex-1">{event.detail}</p>
 
             <div className="mt-auto pt-6 border-t-4 border-slate-100">
-              <div className="w-full max-w-md">
-                {user.role === 'photographer' ? (
-                  <UploadButtonClient eventId={event.id} />
-                ) : (
+              {user.role === 'photographer' ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <UploadButtonClient eventId={event.id} />
+                  </div>
+                  <DeleteEventButtonClient eventId={String(event.id)} />
+                </div>
+              ) : (
+                <div className="w-full max-w-md">
                   <SearchButtonClient eventId={event.id} />
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -87,14 +88,14 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         {/* My Photos Section (เฉพาะ Attendee) */}
         {user.role === 'attendee' && myPhotos.length > 0 && (
           <div className="mb-16">
-            <PhotoGalleryClient photos={myPhotos} eventId={event.id} title="รูปที่คุณอยู่ในระบบ" icon="✨" />
+            <PhotoGalleryClient photos={myPhotos} eventId={event.id} title="รูปที่คุณอยู่ในระบบ" />
             <div className="w-full h-1 bg-slate-200 rounded-full mt-12 mx-auto"></div>
           </div>
         )}
 
         {/* All Photos Gallery Section (ไม่รวมรูปของฉัน) */}
         {otherPhotos.length > 0 ? (
-          <PhotoGalleryClient photos={otherPhotos} eventId={event.id} />
+          <PhotoGalleryClient photos={otherPhotos} eventId={event.id} canDelete={user.role === 'photographer'} />
         ) : (
           <div className="text-center py-24 bubbly-card border-dashed">
             <h3 className="text-5xl font-black text-slate-300 mb-6 animate-bounce-slow">📸</h3>

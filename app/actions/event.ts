@@ -69,7 +69,13 @@ export async function createEventAction(formData: FormData) {
 // ---------------------------------------------------------------------------
 export async function getEventsAction() {
   try {
-    const [events] = await pool.query<RowDataPacket[]>('SELECT * FROM events ORDER BY id DESC');
+    const [events] = await pool.query<RowDataPacket[]>(`
+      SELECT e.*, COUNT(p.id) AS photo_count
+      FROM events e
+      LEFT JOIN photos p ON p.event_id = e.id
+      GROUP BY e.id
+      ORDER BY e.id DESC
+    `);
     return events;
   } catch (e) {
     console.error('Error fetching events:', e);
@@ -87,5 +93,49 @@ export async function getEventByIdAction(id: string) {
   } catch (e) {
     console.error('Error fetching event by id:', e);
     return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 4. ลบงานอีเวนต์ (เฉพาะตากล้อง)
+// ---------------------------------------------------------------------------
+export async function deleteEventAction(eventId: string) {
+  const user = await getUserAction();
+  if (!user || user.role !== 'photographer') {
+    return { success: false, error: 'เฉพาะตากล้องเท่านั้นที่สามารถลบงานได้' };
+  }
+
+  try {
+    // 1. ดึงรายชื่อไฟล์รูปทั้งหมดในงานนี้ก่อนลบ
+    const [photoRows] = await pool.query<RowDataPacket[]>(
+      'SELECT image_path FROM photos WHERE event_id = ?',
+      [eventId]
+    );
+
+    // 2. ลบ child rows (face) → photos → event ตามลำดับ FK
+    await pool.query(
+      'DELETE FROM face WHERE photos_id IN (SELECT id FROM photos WHERE event_id = ?)',
+      [eventId]
+    );
+    await pool.query('DELETE FROM photos WHERE event_id = ?', [eventId]);
+    await pool.query('DELETE FROM events WHERE id = ?', [eventId]);
+
+    // 3. ลบไฟล์รูปทั้งหมดออกจาก disk
+    const { unlink, rmdir } = await import('fs/promises');
+    for (const row of photoRows as any[]) {
+      try {
+        const filePath = path.join(UPLOAD_DIR, String(eventId), row.image_path);
+        await unlink(filePath);
+      } catch { /* ข้ามถ้าไฟล์ไม่มี */ }
+    }
+    // ลบโฟลเดอร์ของงาน (ถ้าว่างแล้ว)
+    try {
+      await rmdir(path.join(UPLOAD_DIR, String(eventId)));
+    } catch { /* ข้าม */ }
+
+    return { success: true };
+  } catch (e) {
+    console.error('Error deleting event:', e);
+    return { success: false, error: 'เกิดข้อผิดพลาดในการลบงาน' };
   }
 }

@@ -2,7 +2,7 @@
 
 import pool from '@/lib/db';
 import { getUserAction } from './auth';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, unlink } from 'fs/promises';
 import path from 'path';
 
 const UPLOAD_DIR_BASE = 'D:\\find_dae_photos\\events';
@@ -185,5 +185,49 @@ export async function callAISearchAction(eventId: string) {
   } catch (apiError) {
     console.error('AI Searching API call failed:', apiError);
     return { success: false, error: 'AI Server ไม่ตอบสนอง หรือยังไม่ได้เปิดระบบ' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ลบรูปภาพ — ออกจาก DB และไฟล์บนเครื่อง (เฉพาะตากล้อง)
+// ---------------------------------------------------------------------------
+export async function deletePhotoAction(photoId: number, eventId: string) {
+  const user = await getUserAction();
+  if (!user || user.role !== 'photographer') {
+    return { success: false, error: 'เฉพาะตากล้องเท่านั้นที่สามารถลบรูปได้' };
+  }
+
+  try {
+    // 1. ดึง image_path ออกมาก่อนลบ
+    const [rows] = await pool.query<import('mysql2').RowDataPacket[]>(
+      'SELECT image_path FROM photos WHERE id = ? AND event_id = ? AND cameraman_id = ?',
+      [photoId, eventId, user.id]
+    );
+
+    if (rows.length === 0) {
+      return { success: false, error: 'ไม่พบรูปนี้ หรือไม่มีสิทธิ์ลบ' };
+    }
+
+    const imagePath = rows[0].image_path;
+
+    // 2. ลบ child rows ใน face ก่อน (FK constraint)
+    await pool.query('DELETE FROM face WHERE photos_id = ?', [photoId]);
+
+    // 3. ลบออกจากฐานข้อมูล
+    await pool.query('DELETE FROM photos WHERE id = ?', [photoId]);
+
+    // 3. ลบไฟล์จาก disk
+    const filePath = path.join(UPLOAD_DIR_BASE, String(eventId), imagePath);
+    try {
+      await unlink(filePath);
+    } catch (fileErr) {
+      // ไฟล์อาจถูกลบไปแล้ว ไม่ต้อง throw
+      console.warn('File not found on disk, skipping:', filePath);
+    }
+
+    return { success: true };
+  } catch (e) {
+    console.error('Error deleting photo:', e);
+    return { success: false, error: 'เกิดข้อผิดพลาดในการลบรูป' };
   }
 }

@@ -413,8 +413,8 @@ export default function Home() {
       </section>
 
       {/* ───── Footer ───── */}
-      <footer className="mt-auto py-10 text-center border-t-4 border-white bg-slate-50/50 backdrop-blur-sm z-10 relative">
-        <p className="text-slate-500 font-bold">© 2026 Find Dae Technologies. สร้างด้วย 💖 และวัยรุ่นหลังปวด</p>
+      <footer className="mt-auto py-10 text-center border-t-4 border-white bg-slate-50/50 backdrop-blur-sm z-10 relative flex justify-center">
+        <p className="text-slate-500 font-bold flex items-center justify-center gap-2">© 2026 Find Dae Technologies. สร้างด้วย <IconHeart className="w-5 h-5 text-pink-500 fill-pink-500" /> และวัยรุ่นหลังปวด</p>
       </footer>
 
     </div>

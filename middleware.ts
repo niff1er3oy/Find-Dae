@@ -28,15 +28,20 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 2. หากเข้าหน้า /events/create หรือ /dashboard ให้เช็กสิทธิ์ตากล้องอย่างเข้มงวด!
-  if (path.startsWith('/events/create') || path.startsWith('/dashboard')) {
-    // 2.1 ยังไม่ได้ล็อกอิน ➡️ ไล่ไปหน้าล็อกอิน
+  // 2. หน้า /events/create เฉพาะตากล้องเท่านั้น
+  if (path.startsWith('/events/create')) {
     if (!payload) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-    // 2.2 ไม่ใช่ช่างภาพ ➡️ ไล่กลับไปหน้ารวม Events
     if (payload.role !== 'photographer') {
       return NextResponse.redirect(new URL('/events', request.url));
+    }
+  }
+
+  // 3. หน้า /dashboard ต้องล็อกอินแล้วเท่านั้น (ทุก role เข้าได้)
+  if (path.startsWith('/dashboard')) {
+    if (!payload) {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 

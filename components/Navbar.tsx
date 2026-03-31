@@ -80,20 +80,15 @@ export default function Navbar() {
             <Link href="/#roles" className="hover:text-accent-orange transition-colors">เว็บนี้คืออะไร?</Link>
             <Link href="/#features-section" className="hover:text-accent-pink transition-colors">ข้อดี</Link>
             <Link href="/#how-it-works" className="hover:text-accent-yellow transition-colors">ทำยังไง?</Link>
-            <Link href="/events" className="hover:text-accent-orange transition-colors">รวมอีเวนต์</Link>
+            <Link href="/events" className="hover:text-accent-orange transition-colors">อีเวนต์</Link>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-2 bg-white pr-2 pl-1.5 py-1.5 rounded-full shadow-[0_4px_0_#f1f5f9] border-2 border-slate-100">
-                {user.role === 'photographer' && (
-                  <Link href="/dashboard" className="px-4 py-2 rounded-full font-bold text-slate-500 hover:bg-slate-50 hover:text-accent-orange transition-colors text-sm">
-                    แดชบอร์ด
-                  </Link>
-                )}
-                <Link href="/profile" className="rounded-full overflow-hidden border-2 border-accent-orange/50 hover:border-accent-pink transition-colors">
+                <Link href="/dashboard" className="rounded-full overflow-hidden border-2 border-accent-orange/50 hover:border-accent-pink transition-colors">
                   <img
-                    src={user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`}
+                    src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/default-profile.png'}
                     alt="Profile"
                     className="w-10 h-10 object-cover"
                   />
@@ -135,25 +130,19 @@ export default function Navbar() {
             <Link href="/#roles" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-orange">เว็บนี้คืออะไร?</Link>
             <Link href="/#features-section" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-pink">ข้อดี</Link>
             <Link href="/#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-yellow">ทำยังไง?</Link>
-            <Link href="/events" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-orange">รวมงานอีเวนต์</Link>
+            <Link href="/events" onClick={() => setIsMenuOpen(false)} className="text-slate-800 hover:text-accent-orange">อีเวนต์</Link>
 
             <div className="h-2 w-16 bg-accent-peach rounded-full mx-auto my-4 shrink-0" />
 
             {user ? (
               <div className="flex flex-col items-center gap-2">
-                <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="rounded-full overflow-hidden border-4 border-accent-orange shadow-md mb-2 hover:border-accent-pink transition-colors">
-                  <img 
-                    src={user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`} 
-                    alt="Profile" 
-                    className="w-24 h-24 object-cover" 
+                <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="rounded-full overflow-hidden border-4 border-accent-orange shadow-md mb-2 hover:border-accent-pink transition-colors">
+                  <img
+                    src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/default-profile.png'}
+                    alt="Profile"
+                    className="w-24 h-24 object-cover"
                   />
                 </Link>
-
-                {user.role === 'photographer' && (
-                  <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="px-8 py-3 rounded-full font-bold bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors text-xl w-full max-w-xs border-2 border-amber-200 text-center">
-                    แดชบอร์ด
-                  </Link>
-                )}
 
                 <button
                   onClick={handleLogout}

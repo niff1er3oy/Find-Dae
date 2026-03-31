@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { uploadMultiplePhotosAction, callAIForReportAction, checkAiServerAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
+import { Camera, Bot, AlertTriangle } from "lucide-react";
 
 export default function UploadButtonClient({ eventId }: { eventId: string }) {
   const [isUploading, setIsUploading] = useState(false);
@@ -21,7 +22,7 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
     
     // Check initial constraints before sending to server
     if (files.length > 500) {
-      setErrorMsg("กรุณาเลือกไม่เกิน 500 รูปต่อครั้งครับ 📸");
+      setErrorMsg("กรุณาเลือกไม่เกิน 500 รูปต่อครั้งครับ");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -35,11 +36,11 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
     }
 
     setIsUploading(true);
-    setProgressText(`ตรวจสอบสถานะ AI Server... 🤖`);
+    setProgressText(`ตรวจสอบสถานะ AI Server...`);
 
     const isAiUp = await checkAiServerAction();
     if (!isAiUp) {
-      setErrorMsg("AI Server ไม่ตอบสนอง หรือยังไม่ได้เปิดระบบ กรุณาเปิดระบบ AI ก่อนกดอัปโหลดครับ 🛑");
+      setErrorMsg("AI Server ไม่ตอบสนอง หรือยังไม่ได้เปิดระบบ กรุณาเปิดระบบ AI ก่อนกดอัปโหลดครับ");
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
@@ -51,18 +52,18 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
     }
 
     try {
-      setProgressText(`กำลังวิ่งส่งข้อมูลเข้าเซิร์ฟเวอร์... 🚀`);
+      setProgressText(`กำลังวิ่งส่งข้อมูลเข้าเซิร์ฟเวอร์...`);
       const res = await uploadMultiplePhotosAction(eventId, formData);
       
       if (res.success) {
         // เมื่ออัปเดตไฟล์ลงเครื่องเสร็จ เปลี่ยนสถานะมารอรีพอร์ต
         setIsWaitingReport(true);
-        setProgressText(`กำลังให้ AI สแกนใบหน้าและรอรีพอร์ต... 🤖✨`);
+        setProgressText(`กำลังให้ AI สแกนใบหน้าและรอรีพอร์ต...`);
         
         try {
            const aiRes = await callAIForReportAction(eventId, res.folder_path!);
            if (aiRes.success) {
-             setProgressText(`AI สแกนเสร็จสิ้น! 🎉`);
+             setProgressText(`AI สแกนเสร็จสิ้น!`);
              setAiReport(aiRes.report || "ไม่มีรายละเอียดแจ้งกลับจาก AI");
            } else {
              setErrorMsg("อัปโหลดสำเร็จ แต่ " + aiRes.error);
@@ -101,14 +102,14 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
       />
       
       {errorMsg && (
-         <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-600 font-bold border-2 border-red-200 animate-pulse">
-           ⚠️ {errorMsg}
+         <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-600 font-bold border-2 border-red-200 animate-pulse flex items-center gap-2">
+           <AlertTriangle className="w-6 h-6" /> {errorMsg}
          </div>
       )}
 
       {aiReport && (
          <div className="mb-6 p-6 rounded-2xl bg-white text-slate-700 font-bold border-4 border-accent-peach shadow-xl relative animate-float-soft">
-           <div className="absolute -top-5 -right-5 text-4xl">🤖</div>
+           <div className="absolute -top-5 -right-5 bg-white p-2 rounded-full border-2 border-slate-100 shadow-md"><Bot className="w-8 h-8 text-accent-orange"/></div>
            <h4 className="text-xl font-black text-accent-orange mb-2">รายงานความสำเร็จจาก AI (Report):</h4>
            <pre className="bg-slate-50 p-4 rounded-xl text-sm overflow-x-auto whitespace-pre-wrap font-mono text-slate-600 border-2 border-slate-100">
              {aiReport}
@@ -126,11 +127,11 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
           {progressText}
         </div>
       ) : (
-        <button 
+         <button 
           onClick={() => fileInputRef.current?.click()} 
-          className="px-8 py-5 bg-accent-yellow text-amber-900 font-black text-xl rounded-full shadow-[0_6px_0_#d97706] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all w-full text-center"
+          className="px-8 py-5 bg-accent-yellow text-amber-900 font-black text-xl rounded-full shadow-[0_6px_0_#d97706] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all w-full flex justify-center items-center gap-3"
         >
-          อัปโหลดรูปลงงานนี้ 📸
+          อัปโหลดรูปลงงานนี้ <Camera className="w-6 h-6" />
         </button>
       )}
     </div>

@@ -138,3 +138,31 @@ export async function updatePasswordAction(formData: FormData) {
     return { success: false, error: 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน' };
   }
 }
+
+export async function updateNameAction(formData: FormData) {
+  const user = await getUserAction();
+  if (!user) return { success: false, error: 'กรุณาเข้าสู่ระบบก่อน' };
+
+  const newName = (formData.get('name') as string)?.trim();
+  if (!newName || newName.length < 2) {
+    return { success: false, error: 'ชื่อต้องมีอย่างน้อย 2 ตัวอักษร' };
+  }
+
+  try {
+    await pool.query('UPDATE member SET name = ? WHERE id = ?', [newName, user.id]);
+
+    // อัปเดต JWT cookie ให้ชื่อใหม่แสดงใน Navbar ด้วย
+    const token = await new SignJWT({ id: user.id, mail: user.mail, name: newName, role: user.role, profile: user.profile })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('7d')
+      .sign(SECRET_KEY);
+
+    const cookieStore = await cookies();
+    cookieStore.set('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
+
+    return { success: true };
+  } catch (e) {
+    console.error('Update name error:', e);
+    return { success: false, error: 'เกิดข้อผิดพลาดในการเปลี่ยนชื่อ' };
+  }
+}
