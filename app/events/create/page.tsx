@@ -4,17 +4,31 @@ import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createEventAction } from "@/app/actions/event";
 import Link from 'next/link';
+import { Key, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function CreateEventPage() {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
+  const [password, setPassword] = useState('');
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+
+  const handleRandomPassword = () => {
+    const randomPin = Math.floor(100000 + Math.random() * 900000).toString();
+    setPassword(randomPin);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setErrorMsg('รูปโปสเตอร์ต้องมีขนาดไม่เกิน 10 MB');
+        e.target.value = '';
+        setPreview(null);
+        return;
+      }
+      setErrorMsg('');
       setPreview(URL.createObjectURL(file));
     } else {
       setPreview(null);
@@ -77,6 +91,44 @@ export default function CreateEventPage() {
            <div className="flex flex-col gap-2">
              <label className="font-extrabold text-slate-700 pl-2 text-lg">รายละเอียดงาน</label>
              <textarea name="detail" required rows={3} placeholder="อธิบายเกี่ยวกับงานแบบย่อๆ..." className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg resize-none"></textarea>
+           </div>
+
+           <div className="flex flex-col gap-2">
+             <div className="flex items-center justify-between pl-2">
+               <label className="font-extrabold text-slate-700 text-lg flex items-center gap-2">
+                 <Key className="w-5 h-5 text-accent-orange" />
+                 รหัสผ่านเข้าดูอีเวนต์ (ตัวเลือก)
+               </label>
+             </div>
+             <div className="flex flex-col sm:flex-row gap-3">
+               <input 
+                 type="number" 
+                 name="password" 
+                 value={password}
+                 onChange={(e) => setPassword(e.target.value)}
+                 placeholder="ปล่อยว่างไว้หากเป็นงานสาธารณะ..." 
+                 className="w-full sm:flex-1 px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg" 
+               />
+               <div className="flex gap-2">
+                 <button 
+                   type="button" 
+                   onClick={handleRandomPassword}
+                   className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-accent-yellow text-amber-900 font-bold rounded-2xl border-b-4 border-amber-600 hover:translate-y-1 hover:border-b-0 transition-all whitespace-nowrap"
+                 >
+                   <RefreshCw className="w-5 h-5" /> สุ่มรหัส
+                 </button>
+                 <button 
+                   type="button" 
+                   onClick={() => setPassword('')}
+                   disabled={!password}
+                   className="flex items-center justify-center px-4 py-4 bg-slate-200 text-slate-500 font-bold rounded-2xl hover:bg-red-100 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                   title="ลบรหัสผ่าน"
+                 >
+                   <Trash2 className="w-5 h-5" />
+                 </button>
+               </div>
+             </div>
+             <p className="text-sm font-bold text-slate-400 pl-2">หากตั้งรหัสผ่าน ผู้ร่วมงานจะต้องกรอกรหัสผ่านก่อนดูรูปถ่าย</p>
            </div>
 
            <div className="flex flex-col gap-2 mt-2">

@@ -170,9 +170,28 @@ export default function Home() {
             animate('.feature-item', {
               opacity: [0, 1],
               scale: [0.8, 1],
-              delay: stagger(100),
               duration: 1000,
               ease: 'spring(1, 80, 12, 0)'
+            });
+            // Continuous animation for the accuracy icon using anime.js
+            animate('.accuracy-icon', {
+              rotate: ['-10deg', '10deg'],
+              scale: [1, 1.15],
+              duration: 2000,
+              loop: true,
+              direction: 'alternate',
+              ease: 'easeInOutSine'
+            });
+            observer.unobserve(target);
+          }
+
+          if (target.id === 'how-it-works') {
+            animate('.step-card', {
+              opacity: [0, 1],
+              translateY: [40, 0],
+              delay: stagger(100),
+              duration: 800,
+              ease: 'easeOutElastic(1, .8)'
             });
             observer.unobserve(target);
           }
@@ -180,7 +199,7 @@ export default function Home() {
       });
     }, { threshold: 0.2 });
 
-    document.querySelectorAll('#roles-section, #features-section').forEach(el => observer.observe(el));
+    document.querySelectorAll('#roles-section, #features-section, #how-it-works').forEach(el => observer.observe(el));
 
     return () => observer.disconnect();
   }, []);
@@ -287,7 +306,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-black text-slate-800 mb-4">สายโดนแอบถ่าย</h3>
               <p className="text-lg text-slate-500 font-medium mb-8">
-                เพิ่งกลับจากงานคอนเสิร์ต งานวิ่ง แต่งงานต่างๆ อยากหารูปตัวเองใช่มั้ย? อัพโหลดรูปเซลฟี่คุณ 3 รูป แล้วปล่อยให้เราหาให้เลย!
+                เพิ่งกลับจากงานคอนเสิร์ต งานวิ่ง แต่งงานต่างๆ อยากหารูปตัวเองใช่มั้ย? อัปโหลดรูปเซลฟี่คุณ 3 รูป แล้วปล่อยให้เราหาให้เลย!
               </p>
               <button className="mt-auto w-full btn-primary btn-pink">
                 เริ่มหารูปตัวเอง
@@ -301,7 +320,7 @@ export default function Home() {
               </div>
               <h3 className="text-3xl font-black text-slate-800 mb-4">สายตากล้องกดแชะ</h3>
               <p className="text-lg text-slate-500 font-medium mb-8">
-                อัพโหลดรูปแบบเหมาแผง! โยนรูปทั้งหมดเข้าอัลบั้ม ปล่อยให้ระบบเราจัดการ AI แท็กหน้าให้ลูกค้ามาค้นหาเจอสบายๆ
+                อัปโหลดรูปแบบเหมาแผง! โยนรูปทั้งหมดเข้าอัลบั้ม ปล่อยให้ระบบเราจัดการ AI แท็กหน้าให้ลูกค้ามาค้นหาเจอสบายๆ
               </p>
               <button className="mt-auto w-full btn-primary cursor-pointer">
                 จัดการรูปถ่ายของฉัน
@@ -313,84 +332,143 @@ export default function Home() {
 
       {/* ───── Features ───── */}
       <section id="features-section" className="py-24 px-6 relative z-10 bg-white/50 border-y-4 border-white backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4 flex items-center justify-center gap-3">
-              จุดเด่นที่ทำให้ใครๆ ก็หลงรัก <IconHeart className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 fill-pink-400 animate-pulse" />
-            </h2>
-          </div>
+        <div className="max-w-5xl mx-auto bg-white/70 backdrop-blur-md rounded-[40px] border-[6px] border-white shadow-xl p-8 sm:p-12 feature-item opacity-0">
+          <div className="flex flex-col md:flex-row gap-12 items-center">
+            
+            {/* Visual/Scan Side */}
+            <div className="w-full md:w-1/2 relative bg-slate-100 rounded-[32px] overflow-hidden aspect-[4/3] border-4 border-white shadow-inner flex items-center justify-center">
+              {/* Decorative grid pattern */}
+              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#cbd5e1_2px,transparent_2px)] [background-size:20px_20px]" />
+              
+              {/* Target Face */}
+              <div className="relative w-32 h-32 bg-accent-peach rounded-[40%] flex items-center justify-center shadow-lg border-4 border-white z-10">
+                <IconSmile className="w-16 h-16 text-white" />
+                
+                {/* Animated Scanner Box */}
+                <div className="accuracy-icon absolute inset-[-12px] border-[5px] border-accent-orange border-dashed rounded-[45%]" />
+                
+                {/* Tag Label */}
+                <div className="absolute -bottom-4 bg-accent-pink text-white font-bold text-xs px-3 py-1 rounded-full border-2 border-white shadow-md animate-bounce-slow">
+                  Match 99%
+                </div>
+              </div>
+              
+              {/* Other background "faces" with low opacity */}
+              <div className="absolute top-8 left-8 w-16 h-16 bg-slate-300 rounded-[40%] blur-[2px] opacity-60 flex items-center justify-center"><IconSmile className="w-8 h-8 text-white" /></div>
+              <div className="absolute bottom-10 right-10 w-20 h-20 bg-slate-200 rounded-[40%] blur-[1px] flex items-center justify-center"><IconSmile className="w-10 h-10 text-white" /></div>
+              <div className="absolute top-1/2 right-4 w-12 h-12 bg-slate-300 rounded-[40%] blur-[3px] opacity-50 flex items-center justify-center"><IconSmile className="w-6 h-6 text-white" /></div>
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-10">
-            <div className="feature-item opacity-0">
-              <FeatureBlob
-                title="แม่นยำเวอร์ๆ"
-                desc="แก่นของระบบใช้ Face Recognition AI ตัวท็อป หน้าสั่นหันข้างก็ยังรอด!"
-                icon={<IconScan className="w-10 h-10" />}
-                colorClass="bg-accent-orange"
-                rotate="-rotate-6"
-              />
+            {/* Text Side */}
+            <div className="w-full md:w-1/2 text-center md:text-left">
+              <div className="inline-flex items-center justify-center gap-2 bg-pink-100 text-pink-600 font-bold px-4 py-2 rounded-full mb-6 text-sm">
+                <IconSparkles className="w-4 h-4" /> ไฮไลท์โคตรเด็ดของเรา
+              </div>
+              <h3 className="text-4xl sm:text-5xl font-black text-slate-800 mb-6 leading-tight">
+                ความแม่นยำ <br/><span className="text-accent-orange">สูงลิ่ว!</span> <span className="inline-block animate-pulse">💯</span>
+              </h3>
+              <p className="text-slate-500 font-bold text-lg leading-relaxed mb-8">
+                ลืมระบบค้นหาหน้าแบบเก่าๆ ไปได้เลย! แก่นของระบบใช้ Face Recognition AI ตัวท็อป <span className="text-accent-pink">หน้าสั่นหันข้าง ถ่ายติดไกลๆ</span> แค่ไหนก็ยังรอด ค้นหาหน้าที่ตรงกับคุณเจอแน่นอนแบบสับๆ!
+              </p>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4 bg-white/80 p-3 rounded-2xl border-2 border-green-50 shadow-sm">
+                  <div className="w-10 h-10 bg-green-100 text-green-500 rounded-full flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6 font-bold" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                  </div>
+                  <span className="font-bold text-slate-700">หาใบหน้าเจอแม้จะอยู่ไกลหรือหันข้าง</span>
+                </div>
+                <div className="flex items-center gap-4 bg-white/80 p-3 rounded-2xl border-2 border-green-50 shadow-sm">
+                  <div className="w-10 h-10 bg-green-100 text-green-500 rounded-full flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6 font-bold" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                  </div>
+                  <span className="font-bold text-slate-700">ประมวลผลเปรียบเทียบรูปภาพเร็วระดับเสี้ยววิ</span>
+                </div>
+              </div>
             </div>
-            <div className="feature-item opacity-0">
-              <FeatureBlob
-                title="เร็วกว่าเน็ตบ้าน"
-                desc="อัพโหลดรูปแสนใบ หรือค้นหาหน้าเป็นหมื่น ก็ประมวลผลเสร็จในพริบตาเดียว"
-                icon={<IconSparkles className="w-10 h-10" />}
-                colorClass="bg-accent-pink"
-                rotate="rotate-3"
-              />
-            </div>
-            <div className="feature-item opacity-0">
-              <FeatureBlob
-                title="สิทธิส่วนบุคคลยืนหนึ่ง"
-                desc="รูปเซลฟี่ค้นหาคุณจะไม่ถูกเก็บไว้ เราลบทันทีหลังจากทำภารกิจส่งรูปให้คุณเสร็จ!"
-                icon={<IconSmile className="w-10 h-10" />}
-                colorClass="bg-accent-yellow text-orange-600"
-                rotate="-rotate-3"
-              />
-            </div>
+            
           </div>
         </div>
       </section>
 
       {/* ───── 3 Steps Section (How it works) ───── */}
       <section id="how-it-works" className="py-24 px-6 relative z-10">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-16 flex items-center justify-center gap-3">
-            มันทำงานยังไงน้าา? <IconSearch className="w-10 h-10 sm:w-12 sm:h-12 text-accent-peach" />
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-20 text-center flex items-center justify-center gap-3">
+            การใช้งาน 3 ขั้นตอนง่ายๆ <IconSearch className="w-10 h-10 sm:w-12 sm:h-12 text-accent-peach" />
           </h2>
 
-          <div className="grid sm:grid-cols-3 gap-12 relative">
-            {/* Decorative connecting line for desktop */}
-            <div className="hidden sm:block absolute top-[48px] left-[15%] right-[15%] h-2 bg-slate-100 rounded-full z-[-1]">
-              <div className="h-full bg-accent-orange/30 w-1/2 animate-shimmer rounded-full" />
+          <div className="grid md:grid-cols-2 gap-16">
+
+            {/* Attendee Steps */}
+            <div className="bg-white/60 rounded-[40px] p-8 sm:p-12 border-[6px] border-white shadow-xl">
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-14 h-14 bg-accent-pink text-white rounded-full flex items-center justify-center shadow-lg transform -rotate-6"><IconSmile className="w-8 h-8" /></div>
+                <h3 className="text-3xl font-black text-slate-800">สำหรับผู้เข้าร่วม</h3>
+              </div>
+              <div className="space-y-8 relative">
+                <div className="absolute left-6 top-8 bottom-8 w-1 bg-slate-100 rounded-full z-[-1]" />
+
+                <div className="step-card opacity-0 flex items-start gap-6">
+                  <div className="w-12 h-12 bg-white border-4 border-accent-pink rounded-full flex items-center justify-center text-xl font-black text-accent-pink shadow-md shrink-0">1</div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">เลือกอีเวนต์</h4>
+                    <p className="text-slate-500 font-medium">เข้าสู่ระบบแล้วค้นหางานที่คุณไปร่วม</p>
+                  </div>
+                </div>
+
+                <div className="step-card opacity-0 flex items-start gap-6">
+                  <div className="w-12 h-12 bg-white border-4 border-accent-pink rounded-full flex items-center justify-center text-xl font-black text-accent-pink shadow-md shrink-0">2</div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">กดค้นหา</h4>
+                    <p className="text-slate-500 font-medium">ระบบจะใช้ AI หาใบหน้าจากรูปที่คุณอัปไว้ตอนสมัคร</p>
+                  </div>
+                </div>
+
+                <div className="step-card opacity-0 flex items-start gap-6">
+                  <div className="w-12 h-12 bg-white border-4 border-accent-pink rounded-full flex items-center justify-center text-xl font-black text-accent-pink shadow-md shrink-0">3</div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">ดาวน์โหลด</h4>
+                    <p className="text-slate-500 font-medium">เจอรูปตัวเองแล้ว กดเซฟลงเครื่องได้เลยทันที!</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-orange shadow-xl mb-6 relative">
-                1
-                <div className="absolute -top-3 -right-3 bg-accent-yellow w-8 h-8 rounded-full border-2 border-white" />
+            {/* Photographer Steps */}
+            <div className="bg-white/60 rounded-[40px] p-8 sm:p-12 border-[6px] border-white shadow-xl">
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-14 h-14 bg-accent-orange text-white rounded-full flex items-center justify-center shadow-lg transform rotate-6"><IconCamera className="w-8 h-8" /></div>
+                <h3 className="text-3xl font-black text-slate-800">สำหรับตากล้อง</h3>
               </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-3">เลือกลิงก์อัลบั้ม</h3>
-              <p className="text-slate-500 font-medium max-w-[250px]">จิ้มลิงก์ที่ตากล้องหรือแอดมินงานแจกให้</p>
+              <div className="space-y-8 relative">
+                <div className="absolute left-6 top-8 bottom-8 w-1 bg-slate-100 rounded-full z-[-1]" />
+
+                <div className="step-card opacity-0 flex items-start gap-6">
+                  <div className="w-12 h-12 bg-white border-4 border-accent-orange rounded-full flex items-center justify-center text-xl font-black text-accent-orange shadow-md shrink-0">1</div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">สร้างอีเวนต์</h4>
+                    <p className="text-slate-500 font-medium">เปิดห้องใหม่สำหรับรวมรูปภาพงานนั้นๆ</p>
+                  </div>
+                </div>
+
+                <div className="step-card opacity-0 flex items-start gap-6">
+                  <div className="w-12 h-12 bg-white border-4 border-accent-orange rounded-full flex items-center justify-center text-xl font-black text-accent-orange shadow-md shrink-0">2</div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">เลือกรูป</h4>
+                    <p className="text-slate-500 font-medium">กดปุ่มเลือกรูปภาพทั้งหมดที่คุณถ่ายมา</p>
+                  </div>
+                </div>
+
+                <div className="step-card opacity-0 flex items-start gap-6">
+                  <div className="w-12 h-12 bg-white border-4 border-accent-orange rounded-full flex items-center justify-center text-xl font-black text-accent-orange shadow-md shrink-0">3</div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">อัปโหลด</h4>
+                    <p className="text-slate-500 font-medium">รอระบบอัปโหลดและให้ AI สแกนใบหน้าอัตโนมัติ</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-pink shadow-xl mb-6 relative">
-                2
-                <div className="absolute -top-3 -right-3 bg-accent-peach w-8 h-8 rounded-full border-2 border-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-3">ยิ้มแล้วเซลฟี่ซักแชะ!</h3>
-              <p className="text-slate-500 font-medium max-w-[250px]">ส่งรูปหน้าตัวเองชัดๆ ให้ระบบรู้จัก</p>
-            </div>
-
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-3xl font-black text-accent-blue shadow-xl mb-6 relative">
-                3
-                <div className="absolute -top-3 -right-3 bg-green-400 w-8 h-8 rounded-full border-2 border-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-3">เซฟรูปลงเครื่องไปเลย!</h3>
-              <p className="text-slate-500 font-medium max-w-[250px]">AI จะคัดรูปที่มีหน้าคุณทั้งหมดมาโชว์ทันที</p>
-            </div>
           </div>
         </div>
       </section>
@@ -403,7 +481,7 @@ export default function Home() {
 
           <div className="relative z-10">
             <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-8 flex items-center justify-center gap-3">
-              พร้อมจะลุยกันแล้วหรือยังแกรร! <IconArrowRight className="w-10 h-10 sm:w-12 sm:h-12 text-accent-orange" />
+              พร้อมจะใช้งานกันหรือยัง! <IconArrowRight className="w-10 h-10 sm:w-12 sm:h-12 text-accent-orange" />
             </h2>
             <Link href="/signup" className="inline-flex items-center justify-center btn-primary text-xl px-12 py-5 shadow-[0_10px_0_#cc5500]">
               ไปหน้าสมัครสมาชิกกันเลย

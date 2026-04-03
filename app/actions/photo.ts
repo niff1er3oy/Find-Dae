@@ -4,9 +4,10 @@ import pool from '@/lib/db';
 import { getUserAction } from './auth';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import path from 'path';
+import { checkEventRoleAction } from './event';
 
 const UPLOAD_DIR_BASE = 'D:\\find_dae_photos\\events';
-const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 export async function uploadMultiplePhotosAction(eventId: string, formData: FormData) {
   const user = await getUserAction();
@@ -14,6 +15,11 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
   // 1. ตรวจสอบสิทธิ์ (ต้องเป็นตากล้องเท่านั้น)
   if (!user || user.role !== 'photographer') {
     return { success: false, error: 'เฉพาะตากล้องเท่านั้นที่สามารถอัปโหลดรูปลงงานนี้ได้' };
+  }
+
+  const role = await checkEventRoleAction(eventId);
+  if (role === 'none') {
+    return { success: false, error: 'คุณยังไม่ได้ถูกเชิญให้เป็นผู้ดูแลร่วมในงานนี้ จึงไม่สามารถอัปโหลดได้' };
   }
 
   // 2. ดึงไฟล์ทั้งหมดออกมาจาก FormData
@@ -30,7 +36,7 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 
   const validFiles = files.filter(f => f.size > 0 && f.size <= MAX_FILE_SIZE);
   if (validFiles.length !== files.length) {
-    return { success: false, error: 'พบรูปภาพที่มีขนาดเกิน 4MB อยู่ในรายการ กรุณาตรวจสอบแล้วลองอัปโหลดภาพที่ผ่านเกณฑ์เท่านั้น' };
+    return { success: false, error: 'พบรูปภาพที่มีขนาดเกิน 5MB อยู่ในรายการ กรุณาตรวจสอบแล้วลองอัปโหลดภาพที่ผ่านเกณฑ์เท่านั้น' };
   }
 
   try {
@@ -58,13 +64,13 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
       await writeFile(filePath, buffer);
 
       // เตรียมข้อมูลชุด Insert ลง DB
-      sqlValues.push('(?, ?, ?)');
+      sqlValues.push('(?, ?, ?, NOW())');
       bindParams.push(filename, eventId, user.id);
     }
 
     // 6. รัน SQL INSERT ข้อมูลหลายแถวรวดเดียว
     if (sqlValues.length > 0) {
-      const sqlQuery = `INSERT INTO photos (image_path, event_id, cameraman_id) VALUES ${sqlValues.join(', ')}`;
+      const sqlQuery = `INSERT INTO photos (image_path, event_id, photographer_id, created_at) VALUES ${sqlValues.join(', ')}`;
       await pool.query(sqlQuery, bindParams);
     }
 
@@ -127,7 +133,7 @@ export async function checkAiServerAction() {
 export async function getEventPhotosAction(eventId: string) {
   try {
     const [photos] = await pool.query<import('mysql2').RowDataPacket[]>(
-      'SELECT id, image_path, cameraman_id FROM photos WHERE event_id = ? ORDER BY id DESC',
+      'SELECT id, image_path, photographer_id FROM photos WHERE event_id = ? ORDER BY id DESC',
       [eventId]
     );
     return photos;
@@ -146,10 +152,10 @@ export async function getMyEventPhotosAction(eventId: string) {
 
   try {
     const [photos] = await pool.query<import('mysql2').RowDataPacket[]>(
-      `SELECT p.id, p.image_path, p.cameraman_id 
+      `SELECT p.id, p.image_path, p.photographer_id 
        FROM photos p 
        JOIN face f ON p.id = f.photos_id 
-       WHERE f.member_id = ? AND p.event_id = ? 
+       WHERE f.attendee_id = ? AND p.event_id = ? 
        GROUP BY p.id 
        ORDER BY p.id DESC`,
       [user.id, eventId]
@@ -197,12 +203,27 @@ export async function deletePhotoAction(photoId: number, eventId: string) {
     return { success: false, error: 'เฉพาะตากล้องเท่านั้นที่สามารถลบรูปได้' };
   }
 
+  const role = await checkEventRoleAction(eventId);
+  if (role === 'none') {
+    return { success: false, error: 'ไม่มีสิทธิ์เข้าถึงงานนี้' };
+  }
+
   try {
     // 1. ดึง image_path ออกมาก่อนลบ
-    const [rows] = await pool.query<import('mysql2').RowDataPacket[]>(
-      'SELECT image_path FROM photos WHERE id = ? AND event_id = ? AND cameraman_id = ?',
-      [photoId, eventId, user.id]
-    );
+    let rows;
+    if (role === 'main_owner' || role === 'owner') {
+      // หน้าที่ owner คือสามารถลบได้ทุกรูป
+      [rows] = await pool.query<import('mysql2').RowDataPacket[]>(
+        'SELECT image_path FROM photos WHERE id = ? AND event_id = ?',
+        [photoId, eventId]
+      );
+    } else {
+      // photographer ธรรมดาลบได้แค่ของตัวเอง
+      [rows] = await pool.query<import('mysql2').RowDataPacket[]>(
+        'SELECT image_path FROM photos WHERE id = ? AND event_id = ? AND photographer_id = ?',
+        [photoId, eventId, user.id]
+      );
+    }
 
     if (rows.length === 0) {
       return { success: false, error: 'ไม่พบรูปนี้ หรือไม่มีสิทธิ์ลบ' };

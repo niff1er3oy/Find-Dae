@@ -10,12 +10,12 @@ export async function getPhotographerStatsAction() {
 
    try {
      const [photoCountRows] = await pool.query<RowDataPacket[]>(
-       'SELECT COUNT(id) as totalPhotos FROM photos WHERE cameraman_id = ?',
+       'SELECT COUNT(id) as totalPhotos FROM photos WHERE photographer_id = ?',
        [user.id]
      );
      const [eventCountRows] = await pool.query<RowDataPacket[]>(
-       'SELECT COUNT(DISTINCT event_id) as totalEvents FROM photos WHERE cameraman_id = ?',
-       [user.id]
+       'SELECT COUNT(DISTINCT e.id) as totalEvents FROM events e LEFT JOIN event_collaborators ec ON e.id = ec.event_id WHERE e.photographer_id = ? OR ec.photographer_id = ?',
+       [user.id, user.id]
      );
      return {
        totalPhotos: photoCountRows[0].totalPhotos || 0,
@@ -33,13 +33,14 @@ export async function getContributedEventsAction() {
 
    try {
      const [events] = await pool.query<RowDataPacket[]>(`
-       SELECT e.*, COUNT(p.id) as my_photo_count
+       SELECT e.*, 
+              (SELECT COUNT(*) FROM photos p WHERE p.event_id = e.id AND p.photographer_id = ?) as my_photo_count
        FROM events e
-       JOIN photos p ON e.id = p.event_id
-       WHERE p.cameraman_id = ?
+       LEFT JOIN event_collaborators ec ON e.id = ec.event_id
+       WHERE e.photographer_id = ? OR ec.photographer_id = ?
        GROUP BY e.id
-       ORDER BY MAX(p.id) DESC
-     `, [user.id]);
+       ORDER BY e.created_at DESC
+     `, [user.id, user.id, user.id]);
      return events;
    } catch(e) {
      console.error('Error fetching contributed events:', e);
@@ -53,11 +54,11 @@ export async function getAttendeeStatsAction() {
 
    try {
      const [photoRows] = await pool.query<RowDataPacket[]>(
-       'SELECT COUNT(DISTINCT f.photos_id) as totalPhotosFound FROM face f JOIN photos p ON f.photos_id = p.id WHERE f.member_id = ?',
+       'SELECT COUNT(DISTINCT f.photos_id) as totalPhotosFound FROM face f JOIN photos p ON f.photos_id = p.id WHERE f.attendee_id = ?',
        [user.id]
      );
      const [eventRows] = await pool.query<RowDataPacket[]>(
-       'SELECT COUNT(DISTINCT p.event_id) as totalEventsSearched FROM face f JOIN photos p ON f.photos_id = p.id WHERE f.member_id = ?',
+       'SELECT COUNT(DISTINCT p.event_id) as totalEventsSearched FROM face f JOIN photos p ON f.photos_id = p.id WHERE f.attendee_id = ?',
        [user.id]
      );
      return {
@@ -80,7 +81,7 @@ export async function getAttendeeEventsAction() {
        FROM events e
        JOIN photos p ON e.id = p.event_id
        JOIN face f ON f.photos_id = p.id
-       WHERE f.member_id = ?
+       WHERE f.attendee_id = ?
        GROUP BY e.id
        ORDER BY e.id DESC
      `, [user.id]);

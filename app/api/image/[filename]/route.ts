@@ -12,9 +12,14 @@ export async function GET(
     const { filename } = await params;
     
     // Protect against directory traversal attacks
-    const safeFilename = path.normalize(filename).replace(/^(\.\.(\/|\\|$))+/, '');
-    const filePath = path.join(UPLOAD_DIR, safeFilename);
+    let safeFilename = path.normalize(filename).replace(/^(\.\.(\/|\\|$))+/, '');
 
+    // Allow empty or 'default-profile.png' directly to use the disk default profile
+    if (!safeFilename || safeFilename.trim() === '') {
+       safeFilename = 'default-profile.png';
+    }
+
+    const filePath = path.join(UPLOAD_DIR, safeFilename);
     const fileBuffer = await readFile(filePath);
     
     const ext = path.extname(safeFilename).toLowerCase();

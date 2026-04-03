@@ -31,7 +31,7 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
 
   const profileSrc = previews.profile
     ? (previews.profile.startsWith('/') || previews.profile.startsWith('blob:') ? previews.profile : `/api/image/${previews.profile}`)
-    : '/default-profile.png';
+    : '/api/image/default-profile.png';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const file = e.target.files?.[0];

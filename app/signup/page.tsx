@@ -246,7 +246,7 @@ export default function SignupPage() {
                 <IconSmile className="w-6 h-6 text-accent-pink" />
                 <span className="font-black text-slate-800 text-lg">สแกนใบหน้าของคุณ (บังคับ)</span>
               </div>
-              <p className="text-sm font-bold text-slate-500 mb-2">อัปโหลดรูปเซลฟี่ใบหน้าตัวเอง 3 รูป ให้ AI เรียนรู้จักคุณ!</p>
+              <p className="text-sm font-bold text-slate-500 mb-2">อัปโหลดรูปเซลฟี่ใบหน้าตัวเอง 3 รูป ให้ AI ทำความรู้จักคุณ!</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[1, 2, 3].map((num) => {
@@ -279,7 +279,7 @@ export default function SignupPage() {
             </div>
 
             <button type="submit" disabled={isPending} className="form-element flex items-center justify-center gap-2 btn-primary w-full text-xl mt-4 disabled:opacity-70 disabled:cursor-not-allowed">
-              {isPending ? 'กำลังพามุดเข้าสู่ระบบ...' : 'สมัคสมาชิกลุยเลย!'} <IconArrowRight className="w-6 h-6 stroke-[3]" />
+              {isPending ? 'กำลังพาคุณเข้าสู่ระบบ...' : 'สมัครสมาชิกลุยเลย!'} <IconArrowRight className="w-6 h-6 stroke-[3]" />
             </button>
           </form>
 

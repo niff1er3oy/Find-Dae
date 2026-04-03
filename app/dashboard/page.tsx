@@ -37,7 +37,7 @@ export default async function DashboardPage() {
           {/* Avatar */}
           <div className="relative shrink-0">
             <img
-              src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/default-profile.png'}
+              src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/api/image/default-profile.png'}
               alt="Profile"
               className="w-28 h-28 rounded-full object-cover border-[6px] border-white shadow-xl animate-float-soft"
             />

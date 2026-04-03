@@ -10,12 +10,15 @@ export default function PhotoGalleryClient({
   photos: initialPhotos,
   eventId,
   title = "อัลบั้มรูปภาพ",
-  canDelete = false
+  myRole = "none",
+  currentUserId,
 }: {
   photos: any[],
   eventId: string,
   title?: string,
-  canDelete?: boolean
+  myRole?: string,
+  currentUserId?: number
+
 }) {
   const [photos, setPhotos] = useState(initialPhotos);
   const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; id: number } | null>(null);
@@ -110,6 +113,7 @@ export default function PhotoGalleryClient({
         {photos.map((photo: any) => {
           const photoUrl = `/api/event-photo/${eventId}/${photo.image_path}`;
           const isDeleting = deletingId === photo.id;
+          const canDeletePhoto = myRole === 'main_owner' || myRole === 'owner' || (myRole === 'photographer' && photo.photographer_id === currentUserId);
           return (
             <div
               key={photo.id}
@@ -133,7 +137,7 @@ export default function PhotoGalleryClient({
               </div>
 
               {/* Delete button (photographer only) */}
-              {canDelete && (
+              {canDeletePhoto && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDelete(photo.id); }}
                   disabled={isDeleting}
@@ -180,16 +184,21 @@ export default function PhotoGalleryClient({
               <Download className="w-5 h-5" />
               ดาวโหลด
             </a>
-            {canDelete && (
-              <button
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-full shadow-xl transition-colors cursor-pointer"
-                onClick={() => handleDelete(selectedPhoto.id)}
-                disabled={deletingId === selectedPhoto.id}
-              >
-                <Trash2 className="w-5 h-5" />
-                ลบรูปนี้
-              </button>
-            )}
+            {(() => {
+                const sp = photos.find(p => p.id === selectedPhoto.id);
+                const canDeleteSp = sp && (myRole === 'main_owner' || myRole === 'owner' || (myRole === 'photographer' && sp.photographer_id === currentUserId));
+                if (!canDeleteSp) return null;
+                return (
+                  <button
+                    className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-full shadow-xl transition-colors cursor-pointer"
+                    onClick={() => handleDelete(selectedPhoto.id)}
+                    disabled={deletingId === selectedPhoto.id}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    ลบรูปนี้
+                  </button>
+                );
+            })()}
           </div>
 
           <img

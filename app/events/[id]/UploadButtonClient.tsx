@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { uploadMultiplePhotosAction, callAIForReportAction, checkAiServerAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
 import { Camera, Bot, AlertTriangle } from "lucide-react";
@@ -27,10 +28,10 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
       return;
     }
 
-    const MAX_SIZE = 4 * 1024 * 1024;
+    const MAX_SIZE = 5 * 1024 * 1024;
     const oversizedFiles = Array.from(files).filter(f => f.size > MAX_SIZE);
     if (oversizedFiles.length > 0) {
-      setErrorMsg(`พบรูปที่ขนาดเกิน 4MB จำนวน ${oversizedFiles.length} รูป กรุณาลบออกก่อนอัปโหลด`);
+      setErrorMsg(`พบรูปที่ขนาดเกิน 5MB จำนวน ${oversizedFiles.length} รูป กรุณาลบออกก่อนอัปโหลด`);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -107,15 +108,28 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
          </div>
       )}
 
-      {aiReport && (
-         <div className="mb-6 p-6 rounded-2xl bg-white text-slate-700 font-bold border-4 border-accent-peach shadow-xl relative animate-float-soft">
-           <div className="absolute -top-5 -right-5 bg-white p-2 rounded-full border-2 border-slate-100 shadow-md"><Bot className="w-8 h-8 text-accent-orange"/></div>
-           <h4 className="text-xl font-black text-accent-orange mb-2">รายงานความสำเร็จจาก AI (Report):</h4>
-           <pre className="bg-slate-50 p-4 rounded-xl text-sm overflow-x-auto whitespace-pre-wrap font-mono text-slate-600 border-2 border-slate-100">
-             {aiReport}
-           </pre>
-           <button onClick={() => setAiReport('')} className="mt-4 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-full font-bold transition-colors w-full">ปิดรายงาน</button>
-         </div>
+      {aiReport && typeof document !== 'undefined' && createPortal(
+         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+           <div className="bg-white rounded-[32px] p-8 max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl relative animate-pop-in border-[6px] border-accent-peach">
+             <div className="absolute -top-6 -right-6 bg-white p-3 rounded-full border-4 border-slate-100 shadow-xl hidden sm:block"><Bot className="w-10 h-10 text-accent-orange" /></div>
+             <h4 className="text-2xl font-black text-accent-orange mb-4 flex items-center gap-3">
+                <Bot className="w-8 h-8 sm:hidden" />
+                รายงานจาก AI (Report)
+             </h4>
+             <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
+               <pre className="bg-slate-50 p-5 rounded-2xl text-sm md:text-base overflow-x-auto whitespace-pre-wrap font-mono text-slate-600 border-2 border-slate-100 shadow-inner">
+                 {aiReport}
+               </pre>
+             </div>
+             <button 
+                onClick={() => setAiReport('')} 
+                className="mt-6 px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-200 rounded-full font-black text-lg transition-all active:scale-95 w-full flex items-center justify-center gap-2"
+             >
+                รับทราบและปิดรายงาน
+             </button>
+           </div>
+         </div>,
+         document.body
       )}
 
       {isUploading ? (

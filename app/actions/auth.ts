@@ -64,7 +64,7 @@ export async function registerAction(formData: FormData) {
     // STEP 1: Insert core data to get auto-incremented `id`
     // We pass empty strings for image columns to satisfy 'NOT NULL' DB constraints without a default value
     const [insertResult] = await pool.query<ResultSetHeader>(
-      `INSERT INTO member (name, mail, password, role, profile, img_1, img_2, img_3) VALUES (?, ?, ?, ?, '', '', '', '')`,
+      `INSERT INTO member (name, mail, password, role, profile, img_1, img_2, img_3, created_at) VALUES (?, ?, ?, ?, '', '', '', '', NOW())`,
       [name, mail, hashedPassword, role]
     );
 
@@ -74,7 +74,7 @@ export async function registerAction(formData: FormData) {
     const profileFile = formData.get('profile') as File | null;
     let profilePath = await saveUserFile(profileFile, `${userId}_prof`);
     if (!profilePath) {
-      profilePath = '/default-profile.png';
+      profilePath = 'default-profile.png';
     }
 
     let img1Path: string | null = null;
