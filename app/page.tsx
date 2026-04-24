@@ -393,77 +393,93 @@ export default function Home() {
       {/* ───── 3 Steps Section (How it works) ───── */}
       <section id="how-it-works" className="py-24 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-20 text-center flex items-center justify-center gap-3">
-            การใช้งาน 3 ขั้นตอนง่ายๆ <IconSearch className="w-10 h-10 sm:w-12 sm:h-12 text-accent-peach" />
-          </h2>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl font-black text-slate-800 mb-4 inline-flex items-center justify-center gap-4 bg-white/60 px-8 py-4 rounded-[32px] border-4 border-white shadow-sm backdrop-blur-md">
+              การใช้งาน 3 ขั้นตอนง่ายๆ <IconSearch className="w-10 h-10 sm:w-12 sm:h-12 text-accent-peach animate-pulse" />
+            </h2>
+          </div>
 
-          <div className="grid md:grid-cols-2 gap-16">
+          <div className="grid md:grid-cols-2 gap-10">
 
             {/* Attendee Steps */}
-            <div className="bg-white/60 rounded-[40px] p-8 sm:p-12 border-[6px] border-white shadow-xl">
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-14 h-14 bg-accent-pink text-white rounded-full flex items-center justify-center shadow-lg transform -rotate-6"><IconSmile className="w-8 h-8" /></div>
-                <h3 className="text-3xl font-black text-slate-800">สำหรับผู้เข้าร่วม</h3>
+            <div className="bg-white/70 backdrop-blur-md rounded-[40px] p-6 sm:p-10 border-[6px] border-white shadow-xl relative overflow-hidden group hover:shadow-2xl transition-shadow duration-500">
+              {/* Decorative Glow */}
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-accent-pink/20 rounded-full blur-[40px] pointer-events-none group-hover:bg-accent-pink/30 transition-colors duration-500" />
+              
+              <div className="flex items-center gap-5 mb-8 relative z-10 bg-white/50 p-4 rounded-3xl border-2 border-white w-fit shadow-sm">
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-400 to-accent-pink text-white rounded-[24px] flex items-center justify-center shadow-lg transform -rotate-12 group-hover:rotate-0 transition-transform duration-500">
+                  <IconSmile className="w-8 h-8" />
+                </div>
+                <h3 className="text-3xl font-black text-slate-800 pr-2">สำหรับผู้เข้าร่วม</h3>
               </div>
-              <div className="space-y-8 relative">
-                <div className="absolute left-6 top-8 bottom-8 w-1 bg-slate-100 rounded-full z-[-1]" />
-
-                <div className="step-card opacity-0 flex items-start gap-6">
-                  <div className="w-12 h-12 bg-white border-4 border-accent-pink rounded-full flex items-center justify-center text-xl font-black text-accent-pink shadow-md shrink-0">1</div>
-                  <div>
+              
+              <div className="space-y-4 relative z-10">
+                {/* Step 1 */}
+                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
+                  <div className="w-14 h-14 bg-pink-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-pink shrink-0 shadow-inner">1</div>
+                  <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">เลือกอีเวนต์</h4>
-                    <p className="text-slate-500 font-medium">เข้าสู่ระบบแล้วค้นหางานที่คุณไปร่วม</p>
+                    <p className="text-slate-500 font-bold leading-relaxed text-sm">เข้าสู่ระบบแล้วจิ้มเลือกงานอีเวนต์ที่คุณไปร่วม ไม่ต้องจำรหัสยากๆ</p>
                   </div>
                 </div>
 
-                <div className="step-card opacity-0 flex items-start gap-6">
-                  <div className="w-12 h-12 bg-white border-4 border-accent-pink rounded-full flex items-center justify-center text-xl font-black text-accent-pink shadow-md shrink-0">2</div>
-                  <div>
+                {/* Step 2 */}
+                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
+                  <div className="w-14 h-14 bg-pink-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-pink shrink-0 shadow-inner">2</div>
+                  <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">กดค้นหา</h4>
-                    <p className="text-slate-500 font-medium">ระบบจะใช้ AI หาใบหน้าจากรูปที่คุณอัปไว้ตอนสมัคร</p>
+                    <p className="text-slate-500 font-bold leading-relaxed text-sm">ระบบจะประมวลผลด้วย AI ขั้นเทพ หาใบหน้าคุณจากร้อยเป็นพันรูปในเสี้ยววิ</p>
                   </div>
                 </div>
 
-                <div className="step-card opacity-0 flex items-start gap-6">
-                  <div className="w-12 h-12 bg-white border-4 border-accent-pink rounded-full flex items-center justify-center text-xl font-black text-accent-pink shadow-md shrink-0">3</div>
-                  <div>
+                {/* Step 3 */}
+                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
+                  <div className="w-14 h-14 bg-pink-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-pink shrink-0 shadow-inner flex-col">3</div>
+                  <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">ดาวน์โหลด</h4>
-                    <p className="text-slate-500 font-medium">เจอรูปตัวเองแล้ว กดเซฟลงเครื่องได้เลยทันที!</p>
+                    <p className="text-slate-500 font-bold leading-relaxed text-sm">เจอรูปตัวเองปุ๊บ กดเซฟรูปลงเครื่องแบบชัดๆ ได้เลยทันที! 🎉</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Photographer Steps */}
-            <div className="bg-white/60 rounded-[40px] p-8 sm:p-12 border-[6px] border-white shadow-xl">
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-14 h-14 bg-accent-orange text-white rounded-full flex items-center justify-center shadow-lg transform rotate-6"><IconCamera className="w-8 h-8" /></div>
-                <h3 className="text-3xl font-black text-slate-800">สำหรับตากล้อง</h3>
+            <div className="bg-white/70 backdrop-blur-md rounded-[40px] p-6 sm:p-10 border-[6px] border-white shadow-xl relative overflow-hidden group hover:shadow-2xl transition-shadow duration-500">
+              {/* Decorative Glow */}
+              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-accent-orange/20 rounded-full blur-[40px] pointer-events-none group-hover:bg-accent-orange/30 transition-colors duration-500" />
+              
+              <div className="flex items-center gap-5 mb-8 relative z-10 bg-white/50 p-4 rounded-3xl border-2 border-white w-fit shadow-sm">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-accent-orange text-white rounded-[24px] flex items-center justify-center shadow-lg transform rotate-12 group-hover:rotate-0 transition-transform duration-500">
+                  <IconCamera className="w-8 h-8" />
+                </div>
+                <h3 className="text-3xl font-black text-slate-800 pr-2">สำหรับตากล้อง</h3>
               </div>
-              <div className="space-y-8 relative">
-                <div className="absolute left-6 top-8 bottom-8 w-1 bg-slate-100 rounded-full z-[-1]" />
-
-                <div className="step-card opacity-0 flex items-start gap-6">
-                  <div className="w-12 h-12 bg-white border-4 border-accent-orange rounded-full flex items-center justify-center text-xl font-black text-accent-orange shadow-md shrink-0">1</div>
-                  <div>
-                    <h4 className="text-2xl font-bold text-slate-800 mb-1">สร้างอีเวนต์</h4>
-                    <p className="text-slate-500 font-medium">เปิดห้องใหม่สำหรับรวมรูปภาพงานนั้นๆ</p>
+              
+              <div className="space-y-4 relative z-10">
+                {/* Step 1 */}
+                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
+                  <div className="w-14 h-14 bg-orange-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-orange shrink-0 shadow-inner">1</div>
+                  <div className="pt-1.5 flex-1">
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">สร้างอัลบั้ม</h4>
+                    <p className="text-slate-500 font-bold leading-relaxed text-sm">เปิดงานใหม่ ตั้งชื่อ ใส่ภาพปก เพื่อให้ผู้คนรู้ว่าเป็นงานของคุณ</p>
                   </div>
                 </div>
 
-                <div className="step-card opacity-0 flex items-start gap-6">
-                  <div className="w-12 h-12 bg-white border-4 border-accent-orange rounded-full flex items-center justify-center text-xl font-black text-accent-orange shadow-md shrink-0">2</div>
-                  <div>
-                    <h4 className="text-2xl font-bold text-slate-800 mb-1">เลือกรูป</h4>
-                    <p className="text-slate-500 font-medium">กดปุ่มเลือกรูปภาพทั้งหมดที่คุณถ่ายมา</p>
+                {/* Step 2 */}
+                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
+                  <div className="w-14 h-14 bg-orange-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-orange shrink-0 shadow-inner">2</div>
+                  <div className="pt-1.5 flex-1">
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">ลากไฟล์ลง</h4>
+                    <p className="text-slate-500 font-bold leading-relaxed text-sm">เพียงแค่ลากรูปภาพที่ถ่ายมาทั้งหมด โยนเข้าในหน้าเว็บได้พร้อมกัน</p>
                   </div>
                 </div>
 
-                <div className="step-card opacity-0 flex items-start gap-6">
-                  <div className="w-12 h-12 bg-white border-4 border-accent-orange rounded-full flex items-center justify-center text-xl font-black text-accent-orange shadow-md shrink-0">3</div>
-                  <div>
-                    <h4 className="text-2xl font-bold text-slate-800 mb-1">อัปโหลด</h4>
-                    <p className="text-slate-500 font-medium">รอระบบอัปโหลดและให้ AI สแกนใบหน้าอัตโนมัติ</p>
+                {/* Step 3 */}
+                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
+                  <div className="w-14 h-14 bg-orange-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-orange shrink-0 shadow-inner flex-col">3</div>
+                  <div className="pt-1.5 flex-1">
+                    <h4 className="text-2xl font-bold text-slate-800 mb-1">อัปโหลดจบปิ๊ง</h4>
+                    <p className="text-slate-500 font-bold leading-relaxed text-sm">รอโหลดแป๊บเดียว AI จะจัดการแจกรูปให้คนที่อยู่ในรูปทันที สบายสุดๆ! 🚀</p>
                   </div>
                 </div>
               </div>

@@ -1,11 +1,12 @@
 'use client';
 
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateEventAction, addEventCollaboratorAction, removeEventCollaboratorAction } from "@/app/actions/event";
 import Link from 'next/link';
 import { Key, RefreshCw, Trash2, Save, Image as ImageIcon, User, AlertCircle, ArrowLeft, Edit2, Users, UserPlus, Shield } from 'lucide-react';
+import { animate, stagger, set } from 'animejs';
 import DeleteEventButtonClient from "@/app/events/[id]/DeleteEventButtonClient";
 
 export default function ManageEventClient({ event, attendees, collaborators = [], myRole }: { event: any, attendees: any[], collaborators?: any[], myRole?: string }) {
@@ -19,6 +20,20 @@ export default function ManageEventClient({ event, attendees, collaborators = []
   const [isCollabPending, startCollabTransition] = useTransition();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+
+  const collabRoleRef = useRef<HTMLSelectElement>(null);
+  
+  useEffect(() => {
+    set('.manage-stagger-item', { opacity: 0, translateY: 30 });
+    
+    animate('.manage-stagger-item', {
+      opacity: [0, 1],
+      translateY: [30, 0],
+      duration: 800,
+      delay: stagger(100),
+      ease: 'spring(1, 80, 12, 0)'
+    });
+  }, []);
 
   const handleRandomPassword = () => {
     const randomPin = Math.floor(100000 + Math.random() * 900000).toString();
@@ -70,7 +85,7 @@ export default function ManageEventClient({ event, attendees, collaborators = []
       <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col gap-10">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bubbly-card p-6 border-b-[6px] border-b-accent-orange">
+        <div className="manage-stagger-item flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bubbly-card p-6 border-b-[6px] border-b-accent-orange">
           <div className="flex-1 min-w-0 pr-4">
             <h1 className="text-3xl sm:text-4xl font-black text-slate-800 mb-2 truncate break-all">จัดการ "{event.name}"</h1>
             <p className="text-slate-500 font-bold flex items-center gap-2">
@@ -85,7 +100,7 @@ export default function ManageEventClient({ event, attendees, collaborators = []
         </div>
 
         {/* Section 1: Attendees Analytics */}
-        <div className="bubbly-card p-8 border-t-[8px] border-t-accent-yellow shadow-md">
+        <div className="manage-stagger-item bubbly-card p-8 border-t-[8px] border-t-accent-yellow shadow-md">
           <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 mb-6">
             <div className="bg-yellow-100 p-2 rounded-xl">
               <User className="w-7 h-7 text-amber-500" />
@@ -137,7 +152,7 @@ export default function ManageEventClient({ event, attendees, collaborators = []
         </div>
 
         {/* Section 2: Edit Event Form */}
-        <div className="bubbly-card p-8 border-t-[8px] border-t-accent-pink shadow-md">
+        <div className="manage-stagger-item bubbly-card p-8 border-t-[8px] border-t-accent-pink shadow-md">
           <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 mb-6">
             <div className="bg-pink-100 p-2 rounded-xl">
               <Edit2 className="w-7 h-7 text-accent-pink" />

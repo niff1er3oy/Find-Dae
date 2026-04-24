@@ -9,6 +9,7 @@ import PhotoGalleryClient from "./PhotoGalleryClient";
 import DeleteEventButtonClient from "./DeleteEventButtonClient";
 import EventPasswordPromptClient from "./EventPasswordPromptClient";
 import { Settings, Users } from "lucide-react";
+import EventAnimations from "./EventAnimations";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -59,13 +60,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
         <div className="bg-bubble absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] max-w-[500px] bg-accent-peach/40 rounded-full blur-3xl animate-blob text-slate-800" />
         <div className="bg-bubble absolute top-[30%] right-[-10%] w-[35vw] h-[35vw] max-w-[400px] bg-accent-yellow/30 rounded-full blur-3xl animate-blob text-slate-800" style={{ animationDelay: '2s' }} />
-        <div className="bg-bubble absolute bottom-[-5%] left-[20%] w-[45vw] h-[45vw] max-w-[600px] bg-accent-pink/30 rounded-full blur-3xl animate-blob text-slate-800" style={{ animationDelay: '4s' }} />
+        <div className="bg-bubble absolute bottom-[-5%] left-[20%] w-[45vw] h-[45vw] max-w-[600px] bg-accent-pink/30 rounded-full blur-3xl" style={{ animationDelay: '4s' }} />
       </div>
+
+      <EventAnimations />
 
       <div className="max-w-6xl mx-auto w-full relative z-10">
 
         {/* Event Header Banner */}
-        <div className="bubbly-card p-4 sm:p-8 flex flex-col md:flex-row gap-8 mb-12 border-t-[8px] border-t-accent-yellow">
+        <div className="event-header-item bubbly-card p-4 sm:p-8 flex flex-col md:flex-row gap-8 mb-12 border-t-[8px] border-t-accent-yellow">
           <div className="w-full md:w-[260px] aspect-[1/1.414] rounded-[24px] overflow-hidden bg-slate-200 border-4 border-white flex-shrink-0 shadow-sm relative">
             {event.poster ? (
               <img src={`/api/event-image/${event.poster}`} alt={event.name} className="absolute inset-0 w-full h-full object-cover" />
@@ -85,7 +88,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               </h3>
               <div className="flex flex-wrap gap-2">
                  {/* Main Owner */}
-                 <div className="flex items-center gap-2 bg-amber-50 border-2 border-amber-100 rounded-full py-1.5 pl-1.5 pr-4 shadow-sm hover:border-amber-200 transition-colors">
+                 <div className="collab-badge flex items-center gap-2 bg-amber-50 border-2 border-amber-100 rounded-full py-1.5 pl-1.5 pr-4 shadow-sm hover:border-amber-200 transition-colors">
                     <img 
                       src={event.creator_profile ? (event.creator_profile.startsWith('/') ? event.creator_profile : `/api/image/${event.creator_profile}`) : '/api/image/default-profile.png'} 
                       alt={event.creator_name || 'Main Owner'}
@@ -95,7 +98,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                  </div>
                  {/* Collaborators */}
                  {collaborators.map((c: any) => (
-                   <div key={c.id || c.member_id} className="flex items-center gap-2 bg-slate-50 border-2 border-slate-100 rounded-full py-1.5 pl-1.5 pr-4 shadow-sm hover:border-slate-200 transition-colors">
+                   <div key={c.id || c.member_id} className="collab-badge flex items-center gap-2 bg-slate-50 border-2 border-slate-100 rounded-full py-1.5 pl-1.5 pr-4 shadow-sm hover:border-slate-200 transition-colors">
                       <img 
                         src={c.profile ? (c.profile.startsWith('/') ? c.profile : `/api/image/${c.profile}`) : '/api/image/default-profile.png'} 
                         alt={c.name}

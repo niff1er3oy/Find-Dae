@@ -117,7 +117,7 @@ export default function PhotoGalleryClient({
           return (
             <div
               key={photo.id}
-              className="aspect-square bg-slate-200 rounded-2xl overflow-hidden group relative border-4 border-white shadow-sm hover:shadow-xl hover:border-accent-yellow transition-all duration-300"
+              className="photo-card-item aspect-square bg-slate-200 rounded-2xl overflow-hidden group relative border-4 border-white shadow-sm hover:shadow-xl hover:border-accent-yellow transition-all duration-300"
             >
               <img
                 src={photoUrl}

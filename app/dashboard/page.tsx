@@ -3,6 +3,8 @@ import { getUserAction } from "@/app/actions/auth";
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Camera, Tent, Pin, Frown, Plus, Settings, Images, Search, CalendarCheck } from 'lucide-react';
+import DashboardAnimations from './DashboardAnimations';
+
 
 export default async function DashboardPage() {
   const user = await getUserAction();
@@ -22,10 +24,13 @@ export default async function DashboardPage() {
 
       {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
-        <div className="bg-bubble absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] max-w-[500px] bg-accent-peach/40 rounded-full blur-3xl animate-blob" />
-        <div className="bg-bubble absolute top-[30%] right-[-10%] w-[35vw] h-[35vw] max-w-[400px] bg-accent-yellow/30 rounded-full blur-3xl animate-blob" style={{ animationDelay: '2s' }} />
-        <div className="bg-bubble absolute bottom-[-5%] left-[20%] w-[45vw] h-[45vw] max-w-[600px] bg-accent-pink/30 rounded-full blur-3xl animate-blob" style={{ animationDelay: '4s' }} />
+        <div className="bg-bubble absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] max-w-[500px] bg-accent-peach/40 rounded-full blur-3xl" />
+        <div className="bg-bubble absolute top-[30%] right-[-10%] w-[35vw] h-[35vw] max-w-[400px] bg-accent-yellow/30 rounded-full blur-3xl" style={{ animationDelay: '2s' }} />
+        <div className="bg-bubble absolute bottom-[-5%] left-[20%] w-[45vw] h-[45vw] max-w-[600px] bg-accent-pink/30 rounded-full blur-3xl" style={{ animationDelay: '4s' }} />
       </div>
+
+      <DashboardAnimations />
+
 
       <div className="max-w-6xl mx-auto w-full relative z-10 flex flex-col gap-12">
 
@@ -39,7 +44,7 @@ export default async function DashboardPage() {
             <img
               src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/api/image/default-profile.png'}
               alt="Profile"
-              className="w-28 h-28 rounded-full object-cover border-[6px] border-white shadow-xl animate-float-soft"
+              className="hero-avatar w-28 h-28 rounded-full object-cover border-[6px] border-white shadow-xl"
             />
             <div className={`absolute -bottom-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-md ${isPhotographer ? 'bg-accent-orange' : 'bg-accent-pink'}`}>
               {isPhotographer ? <Camera className="w-5 h-5 text-white" /> : <Search className="w-5 h-5 text-white" />}
@@ -76,7 +81,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 gap-4">
           {isPhotographer ? (
             <>
-              <div className="bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-pink">
+              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-pink">
                 <div className="w-12 h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
                   <Camera className="w-6 h-6" />
                 </div>
@@ -85,7 +90,7 @@ export default async function DashboardPage() {
                   <p className="text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalPhotos ?? 0).toLocaleString()} <span className="text-base text-slate-400 font-bold">ภาพ</span></p>
                 </div>
               </div>
-              <div className="bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-yellow">
+              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-yellow">
                 <div className="w-12 h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
                   <Tent className="w-6 h-6" />
                 </div>
@@ -97,7 +102,7 @@ export default async function DashboardPage() {
             </>
           ) : (
             <>
-              <div className="bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-pink">
+              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-pink">
                 <div className="w-12 h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
                   <Images className="w-6 h-6" />
                 </div>
@@ -106,7 +111,7 @@ export default async function DashboardPage() {
                   <p className="text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalPhotosFound ?? 0).toLocaleString()} <span className="text-base text-slate-400 font-bold">ภาพ</span></p>
                 </div>
               </div>
-              <div className="bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-yellow">
+              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-yellow">
                 <div className="w-12 h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
                   <CalendarCheck className="w-6 h-6" />
                 </div>
@@ -142,7 +147,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {(events as any[]).map((event: any) => (
-                <Link key={event.id} href={`/events/${event.id}`} className="bubbly-card group relative flex flex-col overflow-hidden transition-all duration-300 aspect-[1/1.414] rounded-[28px] border-4 border-white/50 bg-slate-200">
+                <Link key={event.id} href={`/events/${event.id}`} className="stagger-item bubbly-card group relative flex flex-col overflow-hidden transition-all duration-300 aspect-[1/1.414] rounded-[28px] border-4 border-white/50 bg-slate-200">
                   {event.poster ? (
                     <img src={`/api/event-image/${event.poster}`} alt={event.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   ) : (
