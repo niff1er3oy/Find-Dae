@@ -127,21 +127,21 @@ export default function PhotoGalleryClient({
                 onClick={() => setSelectedPhoto({ url: photoUrl, id: photo.id })}
               />
 
-              {/* Hover overlay with view label */}
+              {/* Hover overlay with view label — hidden on mobile touch devices */}
               <div
-                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4 pointer-events-none"
+                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4 pointer-events-none hidden sm:flex"
               >
                 <span className="bg-white/90 text-slate-800 px-4 py-2 rounded-full font-bold text-sm shadow-sm">
                   คลิกเพื่อดูรูปเต็ม
                 </span>
               </div>
 
-              {/* Delete button (photographer only) */}
+              {/* Delete button (photographer only) — always visible on mobile, hover-only on desktop */}
               {canDeletePhoto && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDelete(photo.id); }}
                   disabled={isDeleting}
-                  className="absolute top-2 right-2 z-10 w-9 h-9 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 active:scale-95 disabled:opacity-50"
+                  className="absolute top-2 right-2 z-10 w-9 h-9 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 disabled:opacity-50"
                 >
                   {isDeleting ? (
                     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -173,15 +173,15 @@ export default function PhotoGalleryClient({
 
           {/* Bottom action bar: Download (always) + Delete (photographer only) */}
           <div
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3"
+            className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-3 w-max"
             onClick={(e) => e.stopPropagation()}
           >
             <a
               href={selectedPhoto.url}
               download
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold px-6 py-3 rounded-full shadow-xl transition-colors cursor-pointer border border-white/20"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-xl transition-colors cursor-pointer border border-white/20 text-sm sm:text-base"
             >
-              <Download className="w-5 h-5" />
+              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
               ดาวโหลด
             </a>
             {(() => {
@@ -190,11 +190,11 @@ export default function PhotoGalleryClient({
                 if (!canDeleteSp) return null;
                 return (
                   <button
-                    className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-full shadow-xl transition-colors cursor-pointer"
+                    className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-xl transition-colors cursor-pointer text-sm sm:text-base"
                     onClick={() => handleDelete(selectedPhoto.id)}
                     disabled={deletingId === selectedPhoto.id}
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     ลบรูปนี้
                   </button>
                 );

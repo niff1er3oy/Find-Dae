@@ -28,20 +28,20 @@ export default function ClientEventsView({ initialEvents, user }: { initialEvent
   return (
     <div className="w-full">
       {/* Search Bar & Filter */}
-      <div className="mb-10 max-w-3xl mx-auto flex flex-col sm:flex-row gap-4 items-center">
+      <div className="mb-8 sm:mb-10 max-w-3xl mx-auto flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
         <div className="relative group w-full flex-1">
           <input
             type="text"
             placeholder="ค้นหาชื่ออีเวนต์..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-14 pr-6 py-4 rounded-full border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-yellow focus:outline-none focus:ring-4 focus:ring-accent-yellow/30 transition-all text-xl shadow-sm hover:border-slate-200"
+            className="w-full pl-12 sm:pl-14 pr-5 sm:pr-6 py-3.5 sm:py-4 rounded-full border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-yellow focus:outline-none focus:ring-4 focus:ring-accent-yellow/30 transition-all text-base sm:text-xl shadow-sm hover:border-slate-200"
           />
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent-orange w-7 h-7 transition-colors" />
+          <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-accent-orange w-5 sm:w-7 h-5 sm:h-7 transition-colors" />
         </div>
         <button
           onClick={handleFilterClick}
-          className={`flex items-center justify-center gap-2 px-6 py-4 rounded-full border-4 transition-all focus:outline-none shadow-sm whitespace-nowrap font-bold text-lg flex-shrink-0 ${filterMode === 'all'
+          className={`flex items-center justify-center gap-2 px-5 sm:px-6 py-3.5 sm:py-4 rounded-full border-4 transition-all focus:outline-none shadow-sm whitespace-nowrap font-bold text-base sm:text-lg flex-shrink-0 ${filterMode === 'all'
             ? 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:text-slate-700'
             : filterMode === 'no-password'
               ? 'border-accent-peach bg-accent-peach/10 text-orange-600 hover:bg-accent-peach/20'
@@ -49,7 +49,7 @@ export default function ClientEventsView({ initialEvents, user }: { initialEvent
             }`}
           title="ตัวกรองอีเวนต์"
         >
-          <Filter className="w-5 h-5" />
+          <Filter className="w-4 sm:w-5 h-4 sm:h-5" />
           <span>
             {filterMode === 'all' ? 'ทั้งหมด' : filterMode === 'no-password' ? 'สาธารณะ' : 'ส่วนตัว'}
           </span>

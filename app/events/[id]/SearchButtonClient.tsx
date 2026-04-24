@@ -83,17 +83,17 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
       )}
 
       {isSearching ? (
-        <div className={`px-8 py-5 font-black text-xl rounded-full shadow-inner flex items-center justify-center gap-3 w-full cursor-not-allowed ${isWaitingReport ? 'bg-accent-peach text-white shadow-[0_4px_0_#e7a59a] animate-bounce' : 'bg-slate-200 text-slate-600 animate-pulse'}`}>
-          <svg className={`w-8 h-8 animate-spin ${isWaitingReport ? 'text-white' : 'text-accent-orange'}`} fill="none" viewBox="0 0 24 24">
+        <div className={`px-6 py-4 sm:px-8 sm:py-5 font-black text-base sm:text-xl rounded-full shadow-inner flex items-center justify-center gap-2 sm:gap-3 w-full cursor-not-allowed ${isWaitingReport ? 'bg-accent-peach text-white shadow-[0_4px_0_#e7a59a] animate-bounce' : 'bg-slate-200 text-slate-600 animate-pulse'}`}>
+          <svg className={`w-6 h-6 sm:w-8 sm:h-8 animate-spin flex-shrink-0 ${isWaitingReport ? 'text-white' : 'text-accent-orange'}`} fill="none" viewBox="0 0 24 24">
              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          {progressText}
+          <span className="truncate">{progressText}</span>
         </div>
       ) : (
         <button 
           onClick={handleSearchClick}
-          className="px-8 py-5 bg-accent-pink text-white font-black text-xl rounded-full shadow-[0_6px_0_#db2777] hover:-translate-y-1 active:translate-y-1 active:shadow-none transition-all w-full flex items-center justify-center gap-3"
+          className="btn-primary btn-pink w-full flex items-center justify-center gap-3"
         >
           หารูป <Search className="w-6 h-6" />
         </button>

@@ -5,7 +5,7 @@ import { jwtVerify } from 'jose';
 // ต้องเป็น Key 32-bytes เพื่อให้รองรับ Web Crypto API ของ Edge Middleware
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'find-dae-my-super-secret-key-32-bytes-long');
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   let payload = null;
 
@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// กำหนดขอบเขตหน้าเว็บที่ต้องการให้ Middleware นี้ทำงาน
+// กำหนดขอบเขตหน้าเว็บที่ต้องการให้ Proxy นี้ทำงาน
 export const config = {
   matcher: ['/events/create/:path*', '/dashboard/:path*', '/login', '/signup'],
 };

@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const events = isPhotographer ? photographerEvents : attendeeEvents;
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-slate-800 flex flex-col pt-32 pb-16 px-6">
+    <div className="relative min-h-screen overflow-hidden text-slate-800 flex flex-col pt-28 sm:pt-32 pb-16 px-4 sm:px-6">
 
       {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
@@ -35,7 +35,7 @@ export default async function DashboardPage() {
       <div className="max-w-6xl mx-auto w-full relative z-10 flex flex-col gap-12">
 
         {/* ── Hero Header ── */}
-        <div className="bubbly-card p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8 border-b-[6px] border-b-white relative overflow-hidden">
+        <div className="bubbly-card p-5 sm:p-10 flex flex-col sm:flex-row items-center gap-5 sm:gap-8 border-b-[6px] border-b-white relative overflow-hidden">
           {/* Decorative Circle */}
           <div className={`absolute -right-16 -top-16 w-56 h-56 rounded-full opacity-20 ${isPhotographer ? 'bg-accent-orange' : 'bg-accent-pink'}`} />
 
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
             <img
               src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/api/image/default-profile.png'}
               alt="Profile"
-              className="hero-avatar w-28 h-28 rounded-full object-cover border-[6px] border-white shadow-xl"
+              className="hero-avatar w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-[6px] border-white shadow-xl"
             />
             <div className={`absolute -bottom-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-md ${isPhotographer ? 'bg-accent-orange' : 'bg-accent-pink'}`}>
               {isPhotographer ? <Camera className="w-5 h-5 text-white" /> : <Search className="w-5 h-5 text-white" />}
@@ -53,25 +53,25 @@ export default async function DashboardPage() {
 
           {/* Name & Role */}
           <div className="flex-1 text-center sm:text-left">
-            <p className="text-slate-400 font-bold text-base mb-1">{isPhotographer ? 'ตากล้องมือฉมัง' : 'นักผจญภัยในอีเวนต์'}</p>
-            <h1 className="text-4xl sm:text-5xl font-black text-slate-800 mb-3 leading-tight">
+            <p className="text-slate-400 font-bold text-sm sm:text-base mb-1">{isPhotographer ? 'ตากล้องมือฉมัง' : 'นักผจญภัยในอีเวนต์'}</p>
+            <h1 className="text-3xl sm:text-5xl font-black text-slate-800 mb-3 leading-tight">
               {user.name}
             </h1>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 shrink-0">
-            <Link href="/settings" className="flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-slate-200 bg-white text-slate-600 font-bold hover:border-accent-pink hover:text-accent-pink transition-all text-sm shadow-sm">
+          <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 shrink-0 w-full sm:w-auto">
+            <Link href="/settings" className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full border-2 border-slate-200 bg-white text-slate-600 font-bold hover:border-accent-pink hover:text-accent-pink transition-all text-sm shadow-sm flex-1 sm:flex-none">
               <Settings className="w-4 h-4" /> ตั้งค่า
             </Link>
             {isPhotographer && (
-              <Link href="/events/create" className="btn-primary flex items-center justify-center gap-2 px-8 py-3 text-base">
-                <Plus className="w-5 h-5" /> เปิดงานใหม่
+              <Link href="/events/create" className="btn-primary flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base flex-1 sm:flex-none">
+                <Plus className="w-4 sm:w-5 h-4 sm:h-5" /> เปิดงานใหม่
               </Link>
             )}
             {!isPhotographer && (
-              <Link href="/events" className="btn-primary flex items-center justify-center gap-2 px-8 py-3 text-base" style={{ background: 'linear-gradient(135deg,#ff6eb4,#ff9de2)', boxShadow: '0 6px 0 #c2195b' }}>
-                <Search className="w-5 h-5" /> ไปค้นหารูป
+              <Link href="/events" className="btn-primary flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base flex-1 sm:flex-none" style={{ background: 'linear-gradient(135deg,#ff6eb4,#ff9de2)', boxShadow: '0 6px 0 #c2195b' }}>
+                <Search className="w-4 sm:w-5 h-4 sm:h-5" /> ไปค้นหารูป
               </Link>
             )}
           </div>
@@ -81,43 +81,43 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 gap-4">
           {isPhotographer ? (
             <>
-              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-pink">
-                <div className="w-12 h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
-                  <Camera className="w-6 h-6" />
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-pink">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
+                  <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-sm mb-0.5">รูปทั้งหมด</p>
-                  <p className="text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalPhotos ?? 0).toLocaleString()} <span className="text-base text-slate-400 font-bold">ภาพ</span></p>
+                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">รูปทั้งหมด</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalPhotos ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">ภาพ</span></p>
                 </div>
               </div>
-              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-yellow">
-                <div className="w-12 h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
-                  <Tent className="w-6 h-6" />
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-yellow">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
+                  <Tent className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-sm mb-0.5">งานที่แจม</p>
-                  <p className="text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalEvents ?? 0).toLocaleString()} <span className="text-base text-slate-400 font-bold">งาน</span></p>
+                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">งานที่แจม</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalEvents ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">งาน</span></p>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-pink">
-                <div className="w-12 h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
-                  <Images className="w-6 h-6" />
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-pink">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
+                  <Images className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-sm mb-0.5">รูปที่เจอ</p>
-                  <p className="text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalPhotosFound ?? 0).toLocaleString()} <span className="text-base text-slate-400 font-bold">ภาพ</span></p>
+                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">รูปที่เจอ</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalPhotosFound ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">ภาพ</span></p>
                 </div>
               </div>
-              <div className="stagger-item bubbly-card flex items-center gap-4 p-6 border-l-[6px] border-l-accent-yellow">
-                <div className="w-12 h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
-                  <CalendarCheck className="w-6 h-6" />
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-yellow">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
+                  <CalendarCheck className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-sm mb-0.5">งานที่ค้นหา</p>
-                  <p className="text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalEventsSearched ?? 0).toLocaleString()} <span className="text-base text-slate-400 font-bold">งาน</span></p>
+                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">งานที่ค้นหา</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalEventsSearched ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">งาน</span></p>
                 </div>
               </div>
             </>

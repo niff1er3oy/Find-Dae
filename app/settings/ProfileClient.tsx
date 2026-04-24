@@ -191,7 +191,7 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
               })}
             </div>
 
-            <button type="submit" disabled={isPending} className="btn-pink py-3 px-8 rounded-full font-black text-white flex items-center gap-2 text-base">
+            <button type="submit" disabled={isPending} className="btn-primary btn-pink flex items-center gap-2">
               <ImageIcon className="w-5 h-5" />
               {isPending ? 'กำลังบันทึก...' : 'บันทึกรูปภาพ'}
             </button>

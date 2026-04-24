@@ -1,4 +1,4 @@
-import { getEventByIdAction, getEventFoundAttendeesAction, checkEventRoleAction, getEventCollaboratorsAction } from "@/app/actions/event";
+import { getEventByIdAction, getEventFoundAttendeesAction, checkEventRoleAction, getEventCollaboratorsAction, getEventStatsAction } from "@/app/actions/event";
 import { getUserAction } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
 import ManageEventClient from "./ManageEventClient";
@@ -21,8 +21,11 @@ export default async function SingleEventManagePage({ params }: { params: Promis
     redirect('/events');
   }
 
-  const attendees = await getEventFoundAttendeesAction(id);
-  const collaborators = await getEventCollaboratorsAction(id);
+  const [attendees, collaborators, stats] = await Promise.all([
+    getEventFoundAttendeesAction(id),
+    getEventCollaboratorsAction(id),
+    getEventStatsAction(id),
+  ]);
 
-  return <ManageEventClient event={event} attendees={attendees} collaborators={collaborators} myRole={role} />;
+  return <ManageEventClient event={event} attendees={attendees} collaborators={collaborators} myRole={role} stats={stats} />;
 }

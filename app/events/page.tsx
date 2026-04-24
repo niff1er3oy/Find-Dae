@@ -9,7 +9,7 @@ export default async function EventsPage() {
   const user = await getUserAction();
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-slate-800 flex flex-col pt-32 pb-12 px-6">
+    <div className="relative min-h-screen overflow-hidden text-slate-800 flex flex-col pt-28 sm:pt-32 pb-12 px-4 sm:px-6">
 
       {/* Playful Background Blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
@@ -21,12 +21,12 @@ export default async function EventsPage() {
       <div className="max-w-6xl mx-auto w-full relative z-10">
 
         {/* Header Section */}
-        <div className="flex flex-col items-center justify-center text-center mb-16 gap-4">
+        <div className="flex flex-col items-center justify-center text-center mb-10 sm:mb-16 gap-4">
           <div>
-            <h1 className="text-4xl sm:text-6xl font-black text-slate-800 flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
-              เลือกอีเวนต์ของคุณ <span className="text-accent-pink animate-bounce-short"><PartyPopper className="inline w-12 h-12" /></span>
+            <h1 className="text-3xl sm:text-6xl font-black text-slate-800 flex flex-col sm:flex-row items-center justify-center gap-3 mb-3 sm:mb-4">
+              เลือกอีเวนต์ของคุณ <span className="text-accent-pink animate-bounce-short"><PartyPopper className="inline w-10 h-10 sm:w-12 sm:h-12" /></span>
             </h1>
-            <p className="text-xl text-slate-500 font-bold max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-slate-500 font-bold max-w-2xl mx-auto">
               รวมงานอีเวนต์ทั้งหมดที่รอให้คุณไปค้นหารูป!
             </p>
           </div>

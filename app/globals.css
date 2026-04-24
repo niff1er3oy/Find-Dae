@@ -199,3 +199,34 @@ html.scroll-smooth {
   border: 3px solid var(--background); 
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
+
+/* ===== Mobile Optimizations ===== */
+@media (max-width: 640px) {
+  /* ป้องกัน iOS auto-zoom เมื่อ focus input */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* ปรับ button ให้ใหญ่พอสำหรับ touch */
+  .btn-primary, .btn-secondary {
+    padding: 14px 28px;
+    font-size: 1rem;
+  }
+
+  /* ซ่อน scrollbar สำหรับ mobile */
+  ::-webkit-scrollbar { width: 4px; }
+}
+
+/* เพิ่ม safe area insets สำหรับ iPhone notch/home indicator */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}

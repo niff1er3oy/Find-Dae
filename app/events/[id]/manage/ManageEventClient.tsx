@@ -5,11 +5,11 @@ import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateEventAction, addEventCollaboratorAction, removeEventCollaboratorAction } from "@/app/actions/event";
 import Link from 'next/link';
-import { Key, RefreshCw, Trash2, Save, Image as ImageIcon, User, AlertCircle, ArrowLeft, Edit2, Users, UserPlus, Shield } from 'lucide-react';
+import { Key, RefreshCw, Trash2, Save, Image as ImageIcon, User, AlertCircle, ArrowLeft, Edit2, Users, UserPlus, Shield, Settings, Camera, ScanFace, CheckCircle2, Crown } from 'lucide-react';
 import { animate, stagger, set } from 'animejs';
 import DeleteEventButtonClient from "@/app/events/[id]/DeleteEventButtonClient";
 
-export default function ManageEventClient({ event, attendees, collaborators = [], myRole }: { event: any, attendees: any[], collaborators?: any[], myRole?: string }) {
+export default function ManageEventClient({ event, attendees, collaborators = [], myRole, stats }: { event: any, attendees: any[], collaborators?: any[], myRole?: string, stats?: { total_photos: number, total_faces: number, matched_faces: number } }) {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState('');
   const [preview, setPreview] = useState<string | null>(event.poster ? `/api/event-image/${event.poster}` : null);
@@ -22,10 +22,10 @@ export default function ManageEventClient({ event, attendees, collaborators = []
   const formRef = useRef<HTMLFormElement>(null);
 
   const collabRoleRef = useRef<HTMLSelectElement>(null);
-  
+
   useEffect(() => {
     set('.manage-stagger-item', { opacity: 0, translateY: 30 });
-    
+
     animate('.manage-stagger-item', {
       opacity: [0, 1],
       translateY: [30, 0],
@@ -74,7 +74,7 @@ export default function ManageEventClient({ event, attendees, collaborators = []
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-slate-800 flex flex-col pt-32 pb-16 px-4 sm:px-6">
+    <div className="relative min-h-screen overflow-hidden text-slate-800 flex flex-col pt-28 sm:pt-32 pb-16 px-4 sm:px-6">
 
       {/* Playful Background Blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
@@ -85,17 +85,79 @@ export default function ManageEventClient({ event, attendees, collaborators = []
       <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col gap-10">
 
         {/* Header */}
-        <div className="manage-stagger-item flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bubbly-card p-6 border-b-[6px] border-b-accent-orange">
-          <div className="flex-1 min-w-0 pr-4">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-800 mb-2 truncate break-all">จัดการ "{event.name}"</h1>
-            <p className="text-slate-500 font-bold flex items-center gap-2">
-              <Link href={`/events/${event.id}`} className="text-accent-orange hover:text-orange-600 underline underline-offset-4 flex items-center gap-1.5 transition-colors bg-orange-50 px-3 py-1 rounded-full">
-                <ArrowLeft className="w-4 h-4" /> กลับไปหน้าอีเวนต์
+        <div className="manage-stagger-item bubbly-card overflow-hidden">
+          {/* Gradient accent bar */}
+          <div className="h-2.5 bg-gradient-to-r from-accent-orange via-accent-yellow to-accent-peach" />
+
+          <div className="p-5 sm:p-7">
+            {/* Top row: back button + delete */}
+            <div className="flex items-center justify-between mb-5">
+              <Link
+                href={`/events/${event.id}`}
+                className="inline-flex items-center gap-2 text-accent-orange hover:text-orange-700 font-black text-sm bg-orange-50 hover:bg-orange-100 px-4 py-2.5 rounded-full transition-all border-2 border-orange-100 hover:border-orange-200 active:scale-95"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">กลับไปหน้าอีเวนต์</span>
+                <span className="sm:hidden">กลับ</span>
               </Link>
-            </p>
-          </div>
-          <div className="shrink-0 rounded-[20px] overflow-hidden bg-red-50 p-2 border-2 border-red-100 flex flex-col sm:block w-full sm:w-auto">
-            <DeleteEventButtonClient eventId={event.id.toString()} />
+
+              <DeleteEventButtonClient eventId={event.id.toString()} />
+            </div>
+
+            {/* Main info row */}
+            <div className="flex items-center gap-4">
+              {/* Poster */}
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-slate-100 border-4 border-white shadow-md shrink-0">
+                {event.poster ? (
+                  <img src={`/api/event-image/${event.poster}`} alt={event.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent-orange/20 to-accent-yellow/20">
+                    <Edit2 className="w-6 h-6 text-accent-orange/60" />
+                  </div>
+                )}
+              </div>
+
+              {/* Name + badges */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-black bg-accent-orange/10 text-accent-orange px-2.5 py-0.5 rounded-full border border-accent-orange/20">
+                    <Settings className="w-3 h-3" /> จัดการ
+                  </span>
+                  {myRole && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-black bg-slate-100 text-slate-500 px-2.5 py-0.5 rounded-full">
+                      {myRole === 'main_owner' ? <><Crown className="w-3 h-3 text-amber-500" /> Main Owner</> : myRole === 'owner' ? <><Shield className="w-3 h-3 text-indigo-400" /> Owner</> : <><Camera className="w-3 h-3" /> Photographer</>}
+                    </span>
+                  )}
+                </div>
+                <h1 className="text-xl sm:text-3xl font-black text-slate-800 break-words leading-tight truncate">
+                  {event.name}
+                </h1>
+              </div>
+            </div>
+
+            {/* Stats row */}
+            {stats && (
+              <div className="grid grid-cols-3 gap-3 mt-5 pt-6">
+                <div className="flex flex-col items-center text-center rounded-2xl p-3 border-2" style={{ backgroundColor: '#000000ff', borderColor: '#000000ff' }}>
+                  <span className="text-2xl sm:text-3xl font-black text-white">{stats.total_photos.toLocaleString()}</span>
+                  <span className="text-[10px] sm:text-sm font-bold text-white mt-1 flex items-center gap-1">
+                    <Camera className="w-3 h-3" /> <span className="hidden sm:inline">รูปทั้งหมด</span>
+                  </span>
+                </div>
+                <div className="flex flex-col items-center text-center rounded-2xl p-3 border-2" style={{ backgroundColor: '#ff8c42', borderColor: '#ff8c42' }}>
+                  <span className="text-2xl sm:text-3xl font-black text-white">{stats.total_faces.toLocaleString()}</span>
+                  <span className="text-[10px] sm:text-sm font-bold text-white mt-1 flex items-center gap-1">
+                    <ScanFace className="w-3 h-3" /> <span className="hidden sm:inline">หน้าที่ตรวจพบ</span>
+                  </span>
+                </div>
+                <div className="flex flex-col items-center text-center rounded-2xl p-3 border-2" style={{ backgroundColor: '#f472b6', borderColor: '#f472b6' }}>
+                  <span className="text-2xl sm:text-3xl font-black text-white">{stats.matched_faces.toLocaleString()}</span>
+                  <span className="text-[10px] sm:text-sm font-bold text-white mt-1 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> <span className="hidden sm:inline">จับคู่แล้ว</span>
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -123,15 +185,15 @@ export default function ManageEventClient({ event, attendees, collaborators = []
                       <p className="text-sm font-black text-accent-pink bg-pink-50 inline-block px-3 py-1 rounded-full border border-pink-100 shadow-sm">ได้รูป {att.matched_faces} ภาพ</p>
                     </div>
                   </div>
-                  
+
                   {/* แสดงรูปภาพที่หาเจอ */}
                   {att.matched_photos && att.matched_photos.length > 0 && (
                     <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar pt-2 border-t-2 border-slate-50">
                       {att.matched_photos.map((photo: string, idx: number) => (
                         <div key={idx} className="w-[60px] h-[60px] shrink-0 rounded-xl overflow-hidden border-2 border-slate-100 bg-slate-50 shadow-sm transition-transform hover:scale-110 origin-left">
-                          <img 
-                            src={`/api/event-photo/${event.id}/${photo}`} 
-                            alt={`Matched photo ${idx+1}`} 
+                          <img
+                            src={`/api/event-photo/${event.id}/${photo}`}
+                            alt={`Matched photo ${idx + 1}`}
                             className="w-full h-full object-cover"
                             loading="lazy"
                           />
@@ -244,7 +306,7 @@ export default function ManageEventClient({ event, attendees, collaborators = []
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-5 rounded-full font-black text-2xl text-white bg-accent-pink shadow-[0_6px_0_#d1366a] hover:-translate-y-1 hover:shadow-[0_10px_0_#d1366a] active:translate-y-2 active:shadow-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                className="btn-primary btn-pink w-full flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
               >
                 <Save className="w-7 h-7" /> {isPending ? 'กำลังบันทึกข้อมูล...' : 'บันทึกการแก้ไขทั้งหมด'}
               </button>
@@ -254,104 +316,106 @@ export default function ManageEventClient({ event, attendees, collaborators = []
 
         {/* Section 3: Manage Collaborators */}
         {(myRole === 'main_owner' || myRole === 'owner') && (
-        <div className="bubbly-card p-8 border-t-[8px] border-t-indigo-400 shadow-md">
-          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 mb-6">
-            <div className="bg-indigo-100 p-2 rounded-xl">
-              <Users className="w-7 h-7 text-indigo-500" />
-            </div>
-            จัดการผู้ดูแลร่วม (Co-Managers)
-          </h2>
-          
-          <div className="bg-slate-50 p-6 rounded-[24px] border-2 border-slate-100 mb-8">
-            <h3 className="font-extrabold text-slate-700 text-lg mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5"/> เพิ่มตากล้องร่วมงาน</h3>
-            <div className="flex flex-col sm:flex-row gap-4">
-               <input 
-                 type="email" 
-                 placeholder="อีเมลตากล้องเป้าหมาย..." 
-                 value={collabEmail}
-                 onChange={(e) => setCollabEmail(e.target.value)}
-                 className="flex-1 px-5 py-4 rounded-xl border-4 border-white bg-white font-bold text-slate-800 shadow-sm focus:border-indigo-400 focus:outline-none transition-all"
-               />
-               <select 
-                 value={collabRole}
-                 onChange={(e) => setCollabRole(e.target.value)}
-                 className="px-3 py-4 rounded-xl border-4 border-white bg-white font-bold text-slate-700 shadow-sm focus:border-indigo-400 focus:outline-none cursor-pointer w-full sm:w-auto"
-               >
-                 <option value="owner">Owner (จัดการอีเวนต์ & ลบรูปให้ทุกคนได้)</option>
-                 <option value="photographer">Photographer (อัปโหลด & ลบได้แค่รูปตัวเอง)</option>
-               </select>
-               <button
-                 type="button"
-                 disabled={isCollabPending || !collabEmail}
-                 onClick={() => {
-                    startCollabTransition(async () => {
-                       const res = await addEventCollaboratorAction(event.id.toString(), collabEmail, collabRole);
-                       if (res.success) {
+          <div className="bubbly-card p-8 border-t-[8px] border-t-indigo-400 shadow-md">
+            <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 mb-6">
+              <div className="bg-indigo-100 p-2 rounded-xl">
+                <Users className="w-7 h-7 text-indigo-500" />
+              </div>
+              จัดการผู้ดูแลร่วม (Co-Managers)
+            </h2>
+
+            <div className="bg-slate-50 p-4 sm:p-6 rounded-[24px] border-2 border-slate-100 mb-8">
+              <h3 className="font-extrabold text-slate-700 text-lg mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5" /> เพิ่มตากล้องร่วมงาน</h3>
+              <div className="flex flex-col gap-3">
+                <input
+                  type="email"
+                  placeholder="อีเมลตากล้องเป้าหมาย..."
+                  value={collabEmail}
+                  onChange={(e) => setCollabEmail(e.target.value)}
+                  className="flex-1 px-5 py-4 rounded-xl border-4 border-white bg-white font-bold text-slate-800 shadow-sm focus:border-indigo-400 focus:outline-none transition-all"
+                />
+                <div className="flex gap-3">
+                  <select
+                    value={collabRole}
+                    onChange={(e) => setCollabRole(e.target.value)}
+                    className="flex-1 min-w-0 px-3 py-4 rounded-xl border-4 border-white bg-white font-bold text-slate-700 shadow-sm focus:border-indigo-400 focus:outline-none cursor-pointer text-sm sm:text-base"
+                  >
+                    <option value="owner">Owner</option>
+                    <option value="photographer">Photographer</option>
+                  </select>
+                  <button
+                    type="button"
+                    disabled={isCollabPending || !collabEmail}
+                    onClick={() => {
+                      startCollabTransition(async () => {
+                        const res = await addEventCollaboratorAction(event.id.toString(), collabEmail, collabRole);
+                        if (res.success) {
                           alert('✅ เพิ่มผู้ดูแลร่วมสำเร็จ!');
                           setCollabEmail('');
                           setCollabList([res.collaborator, ...collabList]);
                           router.refresh();
-                       } else {
+                        } else {
                           alert(res.error);
-                       }
-                    });
-                 }}
-                 className="px-6 py-4 bg-indigo-500 text-white font-black rounded-xl shadow-[0_4px_0_#4338ca] hover:-translate-y-1 hover:shadow-[0_6px_0_#4338ca] active:translate-y-1 active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-               >
-                 {isCollabPending ? 'กำลังเพิ่ม...' : 'เชิญเข้าร่วม'}
-               </button>
+                        }
+                      });
+                    }}
+                    className="shrink-0 px-4 sm:px-5 py-4 bg-indigo-500 text-white font-black rounded-xl shadow-[0_4px_0_#4338ca] hover:-translate-y-1 hover:shadow-[0_6px_0_#4338ca] active:translate-y-1 active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm sm:text-base"
+                  >
+                    {isCollabPending ? 'กำลังเพิ่ม...' : 'เชิญ'}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-3">
-             <div className="flex items-center gap-4 p-4 bg-white border-[3px] border-amber-200 bg-amber-50 rounded-2xl relative overflow-hidden">
-                <div className="absolute right-[-20px] opacity-10"><Shield className="w-24 h-24"/></div>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-4 p-4 bg-white border-[3px] border-amber-200 bg-amber-50 rounded-2xl relative overflow-hidden">
+                <div className="absolute right-[-20px] opacity-10"><Shield className="w-24 h-24" /></div>
                 <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm bg-slate-200 flex items-center justify-center">
-                    <span className="text-xl font-black text-slate-400">👑</span>
+                  <span className="text-xl font-black text-slate-400">👑</span>
                 </div>
                 <div className="flex-1 min-w-0 relative z-10">
-                   <p className="font-extrabold text-slate-800 text-lg flex items-center gap-2"> ผู้สร้างงาน (Main Owner) <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full uppercase tracking-wider">HOST</span></p>
-                   <p className="text-slate-500 text-sm font-bold truncate">แอดมินสูงสุดของงาน และเจ้าของพื้นที่นี้</p>
+                  <p className="font-extrabold text-slate-800 text-lg flex items-center gap-2"> ผู้สร้างงาน (Main Owner) <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full uppercase tracking-wider">HOST</span></p>
+                  <p className="text-slate-500 text-sm font-bold truncate">แอดมินสูงสุดของงาน และเจ้าของพื้นที่นี้</p>
                 </div>
-             </div>
-             
-             {collabList.map((c: any) => (
+              </div>
+
+              {collabList.map((c: any) => (
                 <div key={c.id || c.member_id} className="flex items-center gap-4 p-4 bg-white border-[3px] border-slate-100 rounded-2xl hover:border-slate-200 transition-colors">
-                   <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-slate-100 bg-slate-50">
-                       <img src={c.profile ? (c.profile.startsWith('/') ? c.profile : `/api/image/${c.profile}`) : '/api/image/default-profile.png'} alt={c.name} className="w-full h-full object-cover" />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                      <p className="font-extrabold text-slate-800 text-lg flex items-center gap-2"> 
-                         {c.name} 
-                         <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider text-white ${c.role === 'owner' ? 'bg-indigo-500' : 'bg-teal-500'}`}>
-                            {c.role}
-                         </span>
-                      </p>
-                      <p className="text-slate-500 text-sm font-bold truncate">{c.mail}</p>
-                   </div>
-                   <button 
-                     onClick={() => {
-                        if(confirm(`ยืนยันการลบ ${c.name} ออกจากการเป็นผู้ดูแลร่วม?`)) {
-                           startCollabTransition(async () => {
-                             const res = await removeEventCollaboratorAction(event.id.toString(), c.member_id.toString());
-                             if(res.success) {
-                               setCollabList(collabList.filter((item: any) => item.member_id !== c.member_id));
-                             } else {
-                               alert(res.error);
-                             }
-                           });
-                        }
-                     }}
-                     disabled={isCollabPending}
-                     className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50"
-                     title="ลบออกจากงาน"
-                   >
-                     <Trash2 className="w-5 h-5" />
-                   </button>
+                  <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-slate-100 bg-slate-50">
+                    <img src={c.profile ? (c.profile.startsWith('/') ? c.profile : `/api/image/${c.profile}`) : '/api/image/default-profile.png'} alt={c.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                      {c.name}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider text-white ${c.role === 'owner' ? 'bg-indigo-500' : 'bg-teal-500'}`}>
+                        {c.role}
+                      </span>
+                    </p>
+                    <p className="text-slate-500 text-sm font-bold truncate">{c.mail}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm(`ยืนยันการลบ ${c.name} ออกจากการเป็นผู้ดูแลร่วม?`)) {
+                        startCollabTransition(async () => {
+                          const res = await removeEventCollaboratorAction(event.id.toString(), c.member_id.toString());
+                          if (res.success) {
+                            setCollabList(collabList.filter((item: any) => item.member_id !== c.member_id));
+                          } else {
+                            alert(res.error);
+                          }
+                        });
+                      }
+                    }}
+                    disabled={isCollabPending}
+                    className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50"
+                    title="ลบออกจากงาน"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
-             ))}
+              ))}
+            </div>
           </div>
-        </div>
         )}
 
       </div>

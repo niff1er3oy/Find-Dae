@@ -68,8 +68,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
       <div className="max-w-6xl mx-auto w-full relative z-10">
 
         {/* Event Header Banner */}
-        <div className="event-header-item bubbly-card p-4 sm:p-8 flex flex-col md:flex-row gap-8 mb-12 border-t-[8px] border-t-accent-yellow">
-          <div className="w-full md:w-[260px] aspect-[1/1.414] rounded-[24px] overflow-hidden bg-slate-200 border-4 border-white flex-shrink-0 shadow-sm relative">
+        <div className="event-header-item bubbly-card p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 mb-10 sm:mb-12 border-t-[8px] border-t-accent-yellow">
+          <div className="w-full md:w-[260px] aspect-[1/1.414] max-h-[280px] md:max-h-none rounded-[24px] overflow-hidden bg-slate-200 border-4 border-white flex-shrink-0 shadow-sm relative">
             {event.poster ? (
               <img src={`/api/event-image/${event.poster}`} alt={event.name} className="absolute inset-0 w-full h-full object-cover" />
             ) : (
@@ -77,9 +77,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             )}
           </div>
 
-          <div className="py-6 pr-6 flex-1 flex flex-col">
-            <h1 className="text-4xl sm:text-6xl font-black text-slate-800 mb-4 tracking-tight leading-tight">{event.name}</h1>
-            <p className="text-lg sm:text-xl text-slate-500 font-medium mb-8 leading-relaxed whitespace-pre-line flex-1">{event.detail}</p>
+          <div className="py-2 sm:py-6 sm:pr-6 flex-1 flex flex-col">
+            <h1 className="text-3xl sm:text-6xl font-black text-slate-800 mb-3 sm:mb-4 tracking-tight leading-tight">{event.name}</h1>
+            <p className="text-base sm:text-xl text-slate-500 font-medium mb-6 sm:mb-8 leading-relaxed whitespace-pre-line flex-1">{event.detail}</p>
 
             {/* 📸 Participating Photographers */}
             <div className="mb-6 flex flex-col gap-3">
@@ -110,15 +110,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
-            <div className="mt-auto pt-6 border-t-4 border-slate-100">
+            <div className="mt-auto pt-4 sm:pt-6 border-t-4 border-slate-100">
               {hasAccess && (
                 user.role === 'photographer' ? (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <div className="flex-1 min-w-0">
                       {myRole !== 'none' && <UploadButtonClient eventId={event.id} />}
                     </div>
                     {(myRole === 'main_owner' || myRole === 'owner') && (
-                      <Link href={`/events/${event.id}/manage`} className="flex items-center justify-center h-full px-5 py-[14px] border-4 border-slate-200 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 hover:text-slate-800 font-bold transition-colors shadow-sm">
+                      <Link href={`/events/${event.id}/manage`} className="flex items-center justify-center h-full px-4 sm:px-5 py-[14px] border-4 border-slate-200 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 hover:text-slate-800 font-bold transition-colors shadow-sm">
                         <Settings className="w-5 h-5" />
                       </Link>
                     )}

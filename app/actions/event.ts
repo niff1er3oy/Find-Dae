@@ -440,3 +440,32 @@ export async function removeEventCollaboratorAction(eventId: string, memberIdToR
     return { success: false, error: 'เกิดข้อผิดพลาดในการลบผู้ดูแลร่วม' };
   }
 }
+
+// ---------------------------------------------------------------------------
+// 8. ดึงสถิติรูปภาพในงานอีเวนต์
+// ---------------------------------------------------------------------------
+export async function getEventStatsAction(eventId: string) {
+  try {
+    const [[photoRow]] = await pool.query<RowDataPacket[]>(
+      'SELECT COUNT(*) as total_photos FROM photos WHERE event_id = ?',
+      [eventId]
+    );
+    const [[faceRow]] = await pool.query<RowDataPacket[]>(
+      'SELECT COUNT(*) as total_faces FROM face WHERE photos_id IN (SELECT id FROM photos WHERE event_id = ?)',
+      [eventId]
+    );
+    const [[matchedRow]] = await pool.query<RowDataPacket[]>(
+      'SELECT COUNT(*) as matched_faces FROM face WHERE attendee_id IS NOT NULL AND photos_id IN (SELECT id FROM photos WHERE event_id = ?)',
+      [eventId]
+    );
+    return {
+      total_photos: Number(photoRow.total_photos),
+      total_faces: Number(faceRow.total_faces),
+      matched_faces: Number(matchedRow.matched_faces),
+    };
+  } catch(e) {
+    console.error('Error fetching event stats:', e);
+    return { total_photos: 0, total_faces: 0, matched_faces: 0 };
+  }
+}
+
