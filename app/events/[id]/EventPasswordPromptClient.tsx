@@ -29,7 +29,7 @@ export default function EventPasswordPromptClient({ eventId }: { eventId: string
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xl bg-slate-900/60 animate-fade-in">
-      <div className="bubbly-card relative w-full max-w-md bg-white rounded-[32px] p-8 shadow-2xl overflow-hidden border-t-[8px] border-accent-orange animate-pop-in">
+      <div className="bubbly-card relative w-full max-w-md bg-white rounded-[32px] p-8 shadow-2xl overflow-hidden border-t-[8px] border-t-accent-orange animate-pop-in">
         
         {/* Background abstract decoration */}
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-yellow/20 rounded-full blur-2xl pointer-events-none" />
@@ -46,7 +46,7 @@ export default function EventPasswordPromptClient({ eventId }: { eventId: string
           </p>
 
           {errorMsg && (
-            <div className="mb-6 w-full p-4 rounded-xl bg-red-50 border-2 border-red-200 text-red-600 font-bold flex items-center justify-center gap-2 animate-bounce-short">
+            <div role="alert" className="mb-6 w-full p-4 rounded-xl bg-red-50 border-2 border-red-200 text-red-600 font-bold flex items-center justify-center gap-2 animate-bounce-short">
               <ShieldAlert className="w-5 h-5 flex-shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -58,7 +58,7 @@ export default function EventPasswordPromptClient({ eventId }: { eventId: string
               placeholder="กรอกรหัส PIN ที่นี่..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full text-center px-6 py-4 text-2xl tracking-widest rounded-2xl border-4 border-slate-100 bg-slate-50 font-black text-slate-800 focus:border-accent-orange focus:bg-white focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all placeholder:text-slate-300"
+              className="w-full text-center px-6 py-4 text-2xl tracking-widest rounded-2xl border-4 border-slate-100 bg-slate-50 font-black text-slate-800 focus:border-accent-orange focus:bg-white focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all placeholder:text-slate-400"
               autoFocus
             />
             
@@ -75,7 +75,7 @@ export default function EventPasswordPromptClient({ eventId }: { eventId: string
           <button 
             type="button" 
             onClick={() => router.push('/events')}
-            className="mt-6 text-slate-400 font-bold hover:text-slate-600 transition-colors underline decoration-slate-300 underline-offset-4"
+            className="mt-6 text-slate-500 font-bold hover:text-slate-700 transition-colors underline decoration-slate-300 underline-offset-4"
           >
             ยกเลิกและกลับไปหน้าหลัก
           </button>

@@ -6,6 +6,8 @@ import { deletePhotoAction } from '@/app/actions/photo';
 import { useRouter } from 'next/navigation';
 import { Camera, Trash2, X, Download } from 'lucide-react';
 
+const PAGE_SIZE = 24;
+
 export default function PhotoGalleryClient({
   photos: initialPhotos,
   eventId,
@@ -18,14 +20,17 @@ export default function PhotoGalleryClient({
   title?: string,
   myRole?: string,
   currentUserId?: number
-
 }) {
   const [photos, setPhotos] = useState(initialPhotos);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; id: number } | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  const visiblePhotos = photos.slice(0, visibleCount);
+  const hasMore = visibleCount < photos.length;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -110,7 +115,7 @@ export default function PhotoGalleryClient({
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-        {photos.map((photo: any) => {
+        {visiblePhotos.map((photo: any) => {
           const photoUrl = `/api/event-photo/${eventId}/${photo.image_path}`;
           const isDeleting = deletingId === photo.id;
           const canDeletePhoto = myRole === 'main_owner' || myRole === 'owner' || (myRole === 'photographer' && photo.photographer_id === currentUserId);
@@ -121,9 +126,10 @@ export default function PhotoGalleryClient({
             >
               <img
                 src={photoUrl}
-                alt={`Photo ${photo.id}`}
+                alt={`รูปที่ ${photo.id}`}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
                 loading="lazy"
+                decoding="async"
                 onClick={() => setSelectedPhoto({ url: photoUrl, id: photo.id })}
               />
 
@@ -157,6 +163,23 @@ export default function PhotoGalleryClient({
           );
         })}
       </div>
+
+      {hasMore && (
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <button
+            onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+            className="flex items-center gap-2 px-8 py-3 bg-white border-4 border-slate-100 hover:border-accent-orange text-slate-700 hover:text-accent-orange font-bold rounded-full shadow-sm transition-all active:scale-95"
+          >
+            โหลดเพิ่มอีก
+            <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full text-sm font-black">
+              +{Math.min(PAGE_SIZE, photos.length - visibleCount)}
+            </span>
+          </button>
+          <p className="text-slate-400 text-sm font-semibold">
+            แสดง {Math.min(visibleCount, photos.length)} จาก {photos.length} รูป
+          </p>
+        </div>
+      )}
 
       {/* Lightbox — rendered via Portal to escape parent z-index stacking context */}
       {selectedPhoto && typeof document !== 'undefined' && createPortal(
@@ -203,9 +226,10 @@ export default function PhotoGalleryClient({
 
           <img
             src={selectedPhoto.url}
-            alt="Full screen photo"
+            alt="รูปขยายเต็มจอ"
             className="rounded-xl shadow-2xl object-contain animate-pop-in pointer-events-none"
             style={{ maxWidth: '95vw', maxHeight: '85vh' }}
+            decoding="async"
           />
         </div>,
         document.body

@@ -43,7 +43,7 @@ export default async function DashboardPage() {
           <div className="relative shrink-0">
             <img
               src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/api/image/default-profile.png'}
-              alt="Profile"
+              alt="รูปโปรไฟล์"
               className="hero-avatar w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-[6px] border-white shadow-xl"
             />
             <div className={`absolute -bottom-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-md ${isPhotographer ? 'bg-accent-orange' : 'bg-accent-pink'}`}>
@@ -53,7 +53,7 @@ export default async function DashboardPage() {
 
           {/* Name & Role */}
           <div className="flex-1 text-center sm:text-left">
-            <p className="text-slate-400 font-bold text-sm sm:text-base mb-1">{isPhotographer ? 'ตากล้องมือฉมัง' : 'นักผจญภัยในอีเวนต์'}</p>
+            <p className="text-slate-500 font-bold text-sm sm:text-base mb-1">{isPhotographer ? 'ตากล้องมือฉมัง' : 'นักผจญภัยในอีเวนต์'}</p>
             <h1 className="text-3xl sm:text-5xl font-black text-slate-800 mb-3 leading-tight">
               {user.name}
             </h1>
@@ -81,43 +81,43 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 gap-4">
           {isPhotographer ? (
             <>
-              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-pink">
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-t-[6px] border-t-accent-pink">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
                   <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">รูปทั้งหมด</p>
-                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalPhotos ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">ภาพ</span></p>
+                  <p className="text-slate-500 font-bold text-xs sm:text-sm mb-0.5">รูปทั้งหมด</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalPhotos ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-500 font-bold">ภาพ</span></p>
                 </div>
               </div>
-              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-yellow">
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-t-[6px] border-t-accent-yellow">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
                   <Tent className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">งานที่แจม</p>
-                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalEvents ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">งาน</span></p>
+                  <p className="text-slate-500 font-bold text-xs sm:text-sm mb-0.5">งานที่แจม</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(photographerStats?.totalEvents ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-500 font-bold">งาน</span></p>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-pink">
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-t-[6px] border-t-accent-pink">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 text-accent-pink rounded-2xl flex items-center justify-center shrink-0">
                   <Images className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">รูปที่เจอ</p>
-                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalPhotosFound ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">ภาพ</span></p>
+                  <p className="text-slate-500 font-bold text-xs sm:text-sm mb-0.5">รูปที่เจอ</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalPhotosFound ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-500 font-bold">ภาพ</span></p>
                 </div>
               </div>
-              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-l-[6px] border-l-accent-yellow">
+              <div className="stagger-item bubbly-card flex items-center gap-3 sm:gap-4 p-4 sm:p-6 border-t-[6px] border-t-accent-yellow">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 text-amber-500 rounded-2xl flex items-center justify-center shrink-0">
                   <CalendarCheck className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold text-xs sm:text-sm mb-0.5">งานที่ค้นหา</p>
-                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalEventsSearched ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-400 font-bold">งาน</span></p>
+                  <p className="text-slate-500 font-bold text-xs sm:text-sm mb-0.5">งานที่ค้นหา</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-none">{(attendeeStats?.totalEventsSearched ?? 0).toLocaleString()} <span className="text-sm sm:text-base text-slate-500 font-bold">งาน</span></p>
                 </div>
               </div>
             </>
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
               <h3 className="text-2xl font-black text-slate-600 mb-2">
                 {isPhotographer ? 'ยังไม่เคยอัปโหลดรูปลงงานไหนเลย' : 'ยังไม่เคยค้นหารูปในงานไหนเลย'}
               </h3>
-              <p className="text-slate-400 font-medium mb-8">
+              <p className="text-slate-500 font-medium mb-8">
                 {isPhotographer ? 'ลองเข้าไปในงานอีเวนต์แล้วกดอัปโหลดรูปดูนะ!' : 'ลองไปเลือกงานอีเวนต์แล้วกดหารูปของตัวเองดูสิ!'}
               </p>
               <Link href="/events" className="btn-secondary text-lg">

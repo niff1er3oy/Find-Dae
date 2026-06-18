@@ -76,7 +76,7 @@ export default function CreateEventPage() {
         </div>
 
         {errorMsg && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-200 text-red-600 font-bold text-center animate-bounce-short">
+          <div role="alert" className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-200 text-red-600 font-bold text-center">
             {errorMsg}
           </div>
         )}
@@ -84,30 +84,33 @@ export default function CreateEventPage() {
         <form ref={formRef} onSubmit={handleCreate} className="flex flex-col gap-6">
            
            <div className="flex flex-col gap-2">
-             <label className="font-extrabold text-slate-700 pl-2 text-lg">ชื่ออีเวนต์</label>
-             <input type="text" name="name" required placeholder="เช่น งานวิ่งมาราธอน 2026..." className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg" />
+             <label htmlFor="event-name" className="font-extrabold text-slate-700 pl-2 text-lg">ชื่ออีเวนต์</label>
+             <input id="event-name" type="text" name="name" required placeholder="เช่น งานวิ่งมาราธอน 2026..." className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg placeholder:text-slate-500" />
            </div>
 
            <div className="flex flex-col gap-2">
-             <label className="font-extrabold text-slate-700 pl-2 text-lg">รายละเอียดงาน</label>
-             <textarea name="detail" required rows={3} placeholder="อธิบายเกี่ยวกับงานแบบย่อๆ..." className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg resize-none"></textarea>
+             <label htmlFor="event-detail" className="font-extrabold text-slate-700 pl-2 text-lg">รายละเอียดงาน</label>
+             <textarea id="event-detail" name="detail" required rows={3} placeholder="อธิบายเกี่ยวกับงานแบบย่อๆ..." className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg resize-none placeholder:text-slate-500"></textarea>
            </div>
 
            <div className="flex flex-col gap-2">
              <div className="flex items-center justify-between pl-2">
-               <label className="font-extrabold text-slate-700 text-lg flex items-center gap-2">
+               <label htmlFor="event-password" className="font-extrabold text-slate-700 text-lg flex items-center gap-2">
                  <Key className="w-5 h-5 text-accent-orange" />
                  รหัสผ่านเข้าดูอีเวนต์ (ตัวเลือก)
                </label>
              </div>
              <div className="flex flex-col sm:flex-row gap-3">
-               <input 
-                 type="number" 
-                 name="password" 
+               <input
+                 id="event-password"
+                 type="text"
+                 inputMode="numeric"
+                 pattern="[0-9]*"
+                 name="password"
                  value={password}
-                 onChange={(e) => setPassword(e.target.value)}
-                 placeholder="ปล่อยว่างไว้หากเป็นงานสาธารณะ..." 
-                 className="w-full sm:flex-1 px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg" 
+                 onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
+                 placeholder="ปล่อยว่างไว้หากเป็นงานสาธารณะ..."
+                 className="w-full sm:flex-1 px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all text-lg placeholder:text-slate-500"
                />
                <div className="flex gap-2">
                  <button 
@@ -123,6 +126,7 @@ export default function CreateEventPage() {
                    disabled={!password}
                    className="flex items-center justify-center px-4 py-4 bg-slate-200 text-slate-500 font-bold rounded-2xl hover:bg-red-100 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                    title="ลบรหัสผ่าน"
+                   aria-label="ลบรหัสผ่าน"
                  >
                    <Trash2 className="w-5 h-5" />
                  </button>
@@ -132,18 +136,18 @@ export default function CreateEventPage() {
            </div>
 
            <div className="flex flex-col gap-2 mt-2">
-             <label className="font-extrabold text-slate-700 pl-2 text-lg">รูปโปสเตอร์ปกงาน (จำเป็น)</label>
+             <label htmlFor="event-poster" className="font-extrabold text-slate-700 pl-2 text-lg">รูปโปสเตอร์ปกงาน (จำเป็น)</label>
              
              <div className="w-full h-80 bg-slate-50 border-4 border-dashed border-slate-200 hover:border-accent-orange/50 transition-colors rounded-[32px] overflow-hidden relative flex flex-col items-center justify-center group">
                {preview ? (
-                 <img src={preview} alt="Preview" className="w-full h-full object-cover animate-pop-in" />
+                 <img src={preview} alt="Preview รูปโปสเตอร์" className="w-full h-full object-cover" />
                ) : (
                  <div className="text-slate-400 font-bold flex flex-col items-center">
                     <svg className="w-16 h-16 mb-3 opacity-30 group-hover:scale-110 group-hover:text-accent-orange transition-all" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     คลิกเพื่ออัปโหลดแนบโปสเตอร์
                  </div>
                )}
-               <input type="file" name="poster" accept="image/*" required onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+               <input id="event-poster" type="file" name="poster" accept="image/*" required onChange={handleFileChange} aria-label="อัปโหลดรูปโปสเตอร์ปกงาน" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
              </div>
            </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Camera, Lock, Inbox, Search, Key, Filter } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function ClientEventsView({ initialEvents, user }: { initialEvent
     else setFilterMode('all');
   };
 
-  const filteredEvents = initialEvents.filter(event => {
+  const filteredEvents = useMemo(() => initialEvents.filter(event => {
     const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
     const hasPassword = event.password !== null && event.password !== undefined && String(event.password).trim() !== '';
 
@@ -23,7 +23,7 @@ export default function ClientEventsView({ initialEvents, user }: { initialEvent
     else if (filterMode === 'password') matchesFilter = hasPassword;
 
     return matchesSearch && matchesFilter;
-  });
+  }), [initialEvents, searchTerm, filterMode]);
 
   return (
     <div className="w-full">
@@ -82,7 +82,7 @@ function EventCard({ event, user }: { event: any, user: any }) {
     <Link href={targetHref} className="bubbly-card group relative flex flex-col overflow-hidden transition-all duration-300 aspect-[1/1.414] rounded-[28px] border-4 border-white/50 bg-slate-200 shadow-sm hover:shadow-xl">
       {/* Background Image */}
       {event.poster ? (
-        <img src={`/api/event-image/${event.poster}`} alt={event.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <img src={`/api/event-image/${event.poster}`} alt={event.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" />
       ) : (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center text-slate-400 font-bold bg-slate-100">ไม่มีรูปโปสเตอร์</div>
       )}

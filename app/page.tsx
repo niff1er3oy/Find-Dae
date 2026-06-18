@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { animate, stagger, utils } from "animejs";
-import { getUserAction, logoutAction } from "@/app/actions/auth";
 
 /* ─── Fun Rounded Icons (Feather/Lucide style) ─── */
 function IconSmile({ className = "" }: { className?: string }) {
@@ -17,15 +16,6 @@ function IconCamera({ className = "" }: { className?: string }) {
   return (
     <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
       <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
-    </svg>
-  );
-}
-function IconScan({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-      <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" />
-      <path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-      <circle cx="12" cy="12" r="4" />
     </svg>
   );
 }
@@ -58,48 +48,11 @@ function IconHeart({ className = "" }: { className?: string }) {
     </svg>
   );
 }
-function IconMousePointer({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-      <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" /><path d="M13 13l6 6" />
-    </svg>
-  );
-}
 function IconArrowRight({ className = "" }: { className?: string }) {
   return (
     <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
       <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
     </svg>
-  );
-}
-function IconMenu({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  );
-}
-function IconClose({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-/* ─── Playful Components ─── */
-function FeatureBlob({ title, desc, icon, colorClass, rotate }: { title: string, desc: string, icon: React.ReactNode, colorClass: string, rotate: string }) {
-  return (
-    <div className="flex flex-col items-center text-center max-w-xs mx-auto group cursor-default">
-      <div className={`w-24 h-24 mb-6 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 ${colorClass} ${rotate} animate-float-soft`}>
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold mb-3">{title}</h3>
-      <p className="text-slate-500 font-medium leading-relaxed">{desc}</p>
-    </div>
   );
 }
 
@@ -108,91 +61,96 @@ export default function Home() {
   const scanLineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // 1. Springy entry animations for hero elements
-    animate('.hero-pop', {
-      opacity: [0, 1],
-      scale: [0.5, 1],
-      translateY: [40, 0],
-      duration: 1200,
-      delay: stagger(150),
-      ease: 'spring(1, 80, 12, 0)'
-    });
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 2. Playful scanner animation
-    if (scanLineRef.current && scannerImageRef.current) {
-      animate(scanLineRef.current, {
-        translateY: [0, 180],
-        duration: 2500,
-        direction: 'alternate',
-        loop: true,
-        ease: 'inOutSine'
+    if (!prefersReduced) {
+      animate('.hero-pop', {
+        opacity: [0, 1],
+        scale: [0.5, 1],
+        translateY: [40, 0],
+        duration: 1200,
+        delay: stagger(150),
+        ease: 'spring(1, 80, 12, 0)'
       });
 
-      animate(scannerImageRef.current, {
-        rotate: [-3, 3],
-        duration: 4000,
-        loop: true,
+      if (scanLineRef.current && scannerImageRef.current) {
+        animate(scanLineRef.current, {
+          translateY: [0, 180],
+          duration: 2500,
+          direction: 'alternate',
+          loop: true,
+          ease: 'inOutSine'
+        });
+
+        animate(scannerImageRef.current, {
+          rotate: [-3, 3],
+          duration: 4000,
+          loop: true,
+          direction: 'alternate',
+          ease: 'inOutQuad'
+        });
+      }
+
+      animate('.bg-bubble', {
+        translateY: () => utils.random(-40, 40),
+        translateX: () => utils.random(-40, 40),
+        scale: () => utils.random(0.9, 1.1),
+        duration: () => utils.random(4000, 8000),
         direction: 'alternate',
+        loop: true,
         ease: 'inOutQuad'
       });
     }
 
-    // 3. Float and Bounce background blobs (continuous)
-    animate('.bg-bubble', {
-      translateY: () => utils.random(-40, 40),
-      translateX: () => utils.random(-40, 40),
-      scale: () => utils.random(0.9, 1.1),
-      duration: () => utils.random(4000, 8000),
-      direction: 'alternate',
-      loop: true,
-      ease: 'inOutQuad'
-    });
-
-    // 4. Scroll trigger animations (bouncy reveals)
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const target = entry.target;
 
           if (target.id === 'roles-section') {
-            animate('.role-card', {
-              opacity: [0, 1],
-              translateY: [60, 0],
-              rotate: [utils.random(-5, 5), 0],
-              delay: stagger(150),
-              duration: 1000,
-              ease: 'spring(1, 80, 12, 0)'
-            });
+            if (!prefersReduced) {
+              animate('.role-card', {
+                opacity: [0, 1],
+                translateY: [60, 0],
+                rotate: [utils.random(-5, 5), 0],
+                delay: stagger(150),
+                duration: 1000,
+                ease: 'spring(1, 80, 12, 0)'
+              });
+            }
             observer.unobserve(target);
           }
 
           if (target.id === 'features-section') {
-            animate('.feature-item', {
-              opacity: [0, 1],
-              scale: [0.8, 1],
-              duration: 1000,
-              ease: 'spring(1, 80, 12, 0)'
-            });
-            // Continuous animation for the accuracy icon using anime.js
-            animate('.accuracy-icon', {
-              rotate: ['-10deg', '10deg'],
-              scale: [1, 1.15],
-              duration: 2000,
-              loop: true,
-              direction: 'alternate',
-              ease: 'easeInOutSine'
-            });
+            if (!prefersReduced) {
+              animate('.feature-item', {
+                opacity: [0, 1],
+                scale: [0.8, 1],
+                duration: 1000,
+                ease: 'spring(1, 80, 12, 0)'
+              });
+              animate('.accuracy-icon', {
+                rotate: ['-10deg', '10deg'],
+                scale: [1, 1.15],
+                duration: 2000,
+                loop: true,
+                direction: 'alternate',
+                ease: 'easeInOutSine'
+              });
+            }
             observer.unobserve(target);
           }
 
           if (target.id === 'how-it-works') {
-            animate('.step-card', {
-              opacity: [0, 1],
-              translateY: [40, 0],
-              delay: stagger(100),
-              duration: 800,
-              ease: 'easeOutElastic(1, .8)'
-            });
+            if (!prefersReduced) {
+              animate('.step-card', {
+                opacity: [0, 1],
+                translateY: [40, 0],
+                delay: stagger(100),
+                duration: 800,
+                ease: 'easeOutElastic(1, .8)'
+              });
+            }
             observer.unobserve(target);
           }
         }
@@ -223,11 +181,11 @@ export default function Home() {
           <IconSparkles className="w-4 h-4" /> ระบบ AI ช่วยค้นหารูปในงานอีเวนต์!
         </div>
 
-        <h1 className="hero-pop text-4xl sm:text-7xl font-black text-slate-800 tracking-tight leading-[1.1] max-w-4xl drop-shadow-sm">
+        <h1 className="hero-pop text-hero font-black text-slate-800 max-w-4xl drop-shadow-sm [text-wrap:balance]">
           เลิกไถหารูปจนเมื่อยนิ้ว!
           <br className="hidden sm:block" />
           <span className="sm:hidden"> </span>
-          มาใช้ <span className="gradient-text-fun px-2">Find Dae</span> ดีกว่า <IconSparkles className="inline w-8 h-8 sm:w-12 sm:h-12 text-accent-yellow -mt-2 animate-bounce-slow" />
+          มาใช้ <span className="text-accent-orange">Find Dae</span> ดีกว่า <IconSparkles className="inline w-8 h-8 sm:w-12 sm:h-12 text-accent-yellow -mt-2 animate-bounce-slow" />
         </h1>
 
         <p className="hero-pop mt-6 text-base sm:text-2xl text-slate-500 font-medium max-w-2xl leading-relaxed px-2">
@@ -289,7 +247,7 @@ export default function Home() {
       <section id="roles" className="py-24 px-6 relative z-10">
         <div id="roles-section" className="max-w-5xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-5xl font-black text-slate-800 mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <h2 className="text-display font-black text-slate-800 mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-center gap-3 [text-wrap:balance]">
               Find Dae คือเว็บไซต์อะไร? <IconSparkles className="w-8 h-8 sm:w-12 sm:h-12 text-accent-orange" />
             </h2>
             <p className="text-base sm:text-xl text-slate-500 font-bold max-w-3xl mx-auto leading-relaxed">
@@ -300,7 +258,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-12">
             {/* Attendee */}
-            <div className="role-card bubbly-card p-6 sm:p-10 flex flex-col items-center text-center opacity-0">
+            <div className="role-card bubbly-card p-6 sm:p-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-accent-pink to-pink-300 rounded-3xl mb-6 sm:mb-8 flex items-center justify-center text-white shadow-lg rotate-3 group-hover:rotate-12 transition-transform">
                 <IconSmile className="w-10 h-10 sm:w-12 sm:h-12" />
               </div>
@@ -314,7 +272,7 @@ export default function Home() {
             </div>
 
             {/* Photographer */}
-            <div className="role-card bubbly-card p-6 sm:p-10 flex flex-col items-center text-center opacity-0 delay-100">
+            <div className="role-card bubbly-card p-6 sm:p-10 flex flex-col items-center text-center delay-100">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-accent-orange to-accent-yellow rounded-3xl mb-6 sm:mb-8 flex items-center justify-center text-white shadow-lg -rotate-3 group-hover:-rotate-12 transition-transform">
                 <IconCamera className="w-10 h-10 sm:w-12 sm:h-12" />
               </div>
@@ -332,7 +290,7 @@ export default function Home() {
 
       {/* ───── Features ───── */}
       <section id="features-section" className="py-24 px-6 relative z-10 bg-white/50 border-y-4 border-white backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto bg-white/70 backdrop-blur-md rounded-[40px] border-[6px] border-white shadow-xl p-8 sm:p-12 feature-item opacity-0">
+        <div className="max-w-5xl mx-auto bg-white/70 backdrop-blur-md rounded-[40px] border-[6px] border-white shadow-xl p-8 sm:p-12 feature-item">
           <div className="flex flex-col md:flex-row gap-12 items-center">
             
             {/* Visual/Scan Side */}
@@ -364,8 +322,8 @@ export default function Home() {
               <div className="inline-flex items-center justify-center gap-2 bg-pink-100 text-pink-600 font-bold px-4 py-2 rounded-full mb-6 text-sm">
                 <IconSparkles className="w-4 h-4" /> ไฮไลท์โคตรเด็ดของเรา
               </div>
-              <h3 className="text-4xl sm:text-5xl font-black text-slate-800 mb-6 leading-tight">
-                ความแม่นยำ <br/><span className="text-accent-orange">สูงลิ่ว!</span> <span className="inline-block animate-pulse">💯</span>
+              <h3 className="text-4xl sm:text-5xl font-black text-slate-800 mb-6 leading-tight [text-wrap:balance]">
+                ความแม่นยำ <br/><span className="text-accent-orange">สูงลิ่ว!</span> <span className="inline-block">💯</span>
               </h3>
               <p className="text-slate-500 font-bold text-lg leading-relaxed mb-8">
                 ลืมระบบค้นหาหน้าแบบเก่าๆ ไปได้เลย! แก่นของระบบใช้ Face Recognition AI ตัวท็อป <span className="text-accent-pink">หน้าสั่นหันข้าง ถ่ายติดไกลๆ</span> แค่ไหนก็ยังรอด ค้นหาหน้าที่ตรงกับคุณเจอแน่นอนแบบสับๆ!
@@ -394,7 +352,7 @@ export default function Home() {
       <section id="how-it-works" className="py-16 sm:py-24 px-4 sm:px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-5xl font-black text-slate-800 mb-4 inline-flex items-center justify-center gap-3 sm:gap-4 bg-white/60 px-5 sm:px-8 py-3 sm:py-4 rounded-[28px] sm:rounded-[32px] border-4 border-white shadow-sm backdrop-blur-md">
+            <h2 className="text-2xl sm:text-5xl font-black text-slate-800 mb-4 inline-flex items-center justify-center gap-3 sm:gap-4 bg-white/60 px-5 sm:px-8 py-3 sm:py-4 rounded-[28px] sm:rounded-[32px] border-4 border-white shadow-sm backdrop-blur-md [text-wrap:balance]">
               การใช้งาน 3 ขั้นตอนง่ายๆ <IconSearch className="w-7 h-7 sm:w-12 sm:h-12 text-accent-peach animate-pulse" />
             </h2>
           </div>
@@ -415,7 +373,7 @@ export default function Home() {
               
               <div className="space-y-4 relative z-10">
                 {/* Step 1 */}
-                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
+                <div className="step-card bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
                   <div className="w-14 h-14 bg-pink-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-pink shrink-0 shadow-inner">1</div>
                   <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">เลือกอีเวนต์</h4>
@@ -424,7 +382,7 @@ export default function Home() {
                 </div>
 
                 {/* Step 2 */}
-                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
+                <div className="step-card bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
                   <div className="w-14 h-14 bg-pink-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-pink shrink-0 shadow-inner">2</div>
                   <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">กดค้นหา</h4>
@@ -433,7 +391,7 @@ export default function Home() {
                 </div>
 
                 {/* Step 3 */}
-                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
+                <div className="step-card bg-white rounded-3xl p-5 border-4 border-pink-50 hover:border-pink-200 transition-colors shadow-sm flex items-start gap-5">
                   <div className="w-14 h-14 bg-pink-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-pink shrink-0 shadow-inner flex-col">3</div>
                   <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">ดาวน์โหลด</h4>
@@ -457,7 +415,7 @@ export default function Home() {
               
               <div className="space-y-4 relative z-10">
                 {/* Step 1 */}
-                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
+                <div className="step-card bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
                   <div className="w-14 h-14 bg-orange-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-orange shrink-0 shadow-inner">1</div>
                   <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">สร้างอัลบั้ม</h4>
@@ -466,7 +424,7 @@ export default function Home() {
                 </div>
 
                 {/* Step 2 */}
-                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
+                <div className="step-card bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
                   <div className="w-14 h-14 bg-orange-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-orange shrink-0 shadow-inner">2</div>
                   <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">ลากไฟล์ลง</h4>
@@ -475,7 +433,7 @@ export default function Home() {
                 </div>
 
                 {/* Step 3 */}
-                <div className="step-card opacity-0 bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
+                <div className="step-card bg-white rounded-3xl p-5 border-4 border-orange-50 hover:border-orange-200 transition-colors shadow-sm flex items-start gap-5">
                   <div className="w-14 h-14 bg-orange-100 rounded-[20px] flex items-center justify-center text-2xl font-black text-accent-orange shrink-0 shadow-inner flex-col">3</div>
                   <div className="pt-1.5 flex-1">
                     <h4 className="text-2xl font-bold text-slate-800 mb-1">อัปโหลดจบปิ๊ง</h4>
@@ -496,7 +454,7 @@ export default function Home() {
           <div className="absolute bottom-[-50px] left-[-50px] w-40 h-40 bg-accent-pink/50 rounded-full blur-2xl" />
 
           <div className="relative z-10">
-            <h2 className="text-3xl sm:text-5xl font-black text-slate-800 mb-6 sm:mb-8 flex flex-wrap items-center justify-center gap-3">
+            <h2 className="text-display font-black text-slate-800 mb-6 sm:mb-8 flex flex-wrap items-center justify-center gap-3 [text-wrap:balance]">
               พร้อมจะใช้งานกันหรือยัง! <IconArrowRight className="w-8 h-8 sm:w-12 sm:h-12 text-accent-orange" />
             </h2>
             <Link href="/signup" className="inline-flex items-center justify-center btn-primary text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-5 shadow-[0_10px_0_#cc5500]">

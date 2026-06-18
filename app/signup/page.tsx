@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { animate, stagger, utils } from "animejs";
 import { registerAction } from "@/app/actions/auth";
@@ -124,7 +123,7 @@ export default function SignupPage() {
 
       {/* Signup Form Container */}
       <div className="flex-1 flex items-center justify-center pt-32 pb-20 px-4">
-        <div className="bubbly-card w-full max-w-lg p-8 sm:p-12 relative my-10 border-t-[8px] border-accent-pink">
+        <div className="bubbly-card w-full max-w-lg p-8 sm:p-12 relative my-10 border-t-[8px] border-t-accent-pink">
           
           <div className="form-element text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-black text-slate-800 mb-2 flex items-center justify-center gap-3">

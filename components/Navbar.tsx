@@ -89,8 +89,9 @@ export default function Navbar() {
                 <Link href="/dashboard" className="rounded-full overflow-hidden border-2 border-accent-orange/50 hover:border-accent-pink transition-colors">
                   <img
                     src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/default-profile.png'}
-                    alt="Profile"
+                    alt="รูปโปรไฟล์"
                     className="w-10 h-10 object-cover"
+                    decoding="async"
                   />
                 </Link>
                 <button
@@ -139,8 +140,9 @@ export default function Navbar() {
                 <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="rounded-full overflow-hidden border-4 border-accent-orange shadow-md mb-2 hover:border-accent-pink transition-colors">
                   <img
                     src={user.profile ? (user.profile.startsWith('/') ? user.profile : `/api/image/${user.profile}`) : '/default-profile.png'}
-                    alt="Profile"
+                    alt="รูปโปรไฟล์"
                     className="w-24 h-24 object-cover"
+                    decoding="async"
                   />
                 </Link>
 

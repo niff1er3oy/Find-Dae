@@ -2,9 +2,8 @@
 
 import { useState, useTransition, useRef } from 'react';
 import { updateProfilePhotosAction, updatePasswordAction, updateNameAction } from '@/app/actions/profile';
-import { logoutAction } from '@/app/actions/auth';
 import { useRouter } from 'next/navigation';
-import { Camera, Lock, Smile, Image as ImageIcon, User, Pencil, Check, X, LogOut, ShieldCheck } from 'lucide-react';
+import { Camera, Lock, Smile, Image as ImageIcon, User, Pencil, Check, X, ShieldCheck } from 'lucide-react';
 
 export default function ProfileClient({ profileData }: { profileData: any }) {
   const [isPending, startTransition] = useTransition();
@@ -73,11 +72,6 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
     });
   };
 
-  const handleLogout = async () => {
-    await logoutAction();
-    window.location.href = '/';
-  };
-
   return (
     <div className="w-full flex justify-center pb-20 pt-4 z-10 relative">
       <div className="w-full max-w-3xl flex flex-col gap-6">
@@ -90,7 +84,7 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
           <div className="relative flex flex-col sm:flex-row items-center gap-7">
             {/* Avatar with upload overlay */}
             <div className="relative shrink-0 group">
-              <img src={profileSrc} alt="Profile" className="w-32 h-32 rounded-full object-cover border-[6px] border-white shadow-xl" />
+              <img src={profileSrc} alt="รูปโปรไฟล์" className="w-32 h-32 rounded-full object-cover border-[6px] border-white shadow-xl" />
               <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                 <Camera className="w-7 h-7 text-white" />
                 <form ref={photoFormRef} onSubmit={handlePhotoSubmit} className="hidden" />
@@ -113,29 +107,30 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
                       value={nameValue}
                       onChange={e => setNameValue(e.target.value)}
                       className="text-2xl font-black text-slate-800 border-b-4 border-accent-orange bg-transparent outline-none w-full max-w-xs"
+                      aria-label="ชื่อผู้ใช้"
                       autoFocus
                     />
-                    <button onClick={handleNameSave} disabled={isPending} className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow hover:bg-green-600 shrink-0">
+                    <button onClick={handleNameSave} disabled={isPending} aria-label="บันทึกชื่อ" className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center shadow hover:bg-green-600 shrink-0">
                       <Check className="w-4 h-4" />
                     </button>
-                    <button onClick={() => { setEditingName(false); setNameValue(profileData.name); }} className="w-8 h-8 bg-slate-200 text-slate-600 rounded-full flex items-center justify-center hover:bg-slate-300 shrink-0">
+                    <button onClick={() => { setEditingName(false); setNameValue(profileData.name); }} aria-label="ยกเลิกแก้ไขชื่อ" className="w-8 h-8 bg-slate-200 text-slate-600 rounded-full flex items-center justify-center hover:bg-slate-300 shrink-0">
                       <X className="w-4 h-4" />
                     </button>
                   </>
                 ) : (
                   <>
                     <h1 className="text-3xl sm:text-4xl font-black text-slate-800 truncate">{nameValue}</h1>
-                    <button onClick={() => setEditingName(true)} className="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center hover:bg-accent-orange/10 hover:text-accent-orange shrink-0 transition-colors">
+                    <button onClick={() => setEditingName(true)} aria-label="แก้ไขชื่อ" className="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center hover:bg-accent-orange/10 hover:text-accent-orange shrink-0 transition-colors">
                       <Pencil className="w-4 h-4" />
                     </button>
                   </>
                 )}
               </div>
               {nameMsg && (
-                <p className={`text-sm font-bold mb-1 ${nameMsg.type === 'ok' ? 'text-green-500' : 'text-red-500'}`}>{nameMsg.text}</p>
+                <p role={nameMsg.type === 'err' ? 'alert' : 'status'} className={`text-sm font-bold mb-1 ${nameMsg.type === 'ok' ? 'text-green-600' : 'text-red-600'}`}>{nameMsg.text}</p>
               )}
 
-              <p className="text-slate-400 font-bold text-base mb-3">{profileData.mail}</p>
+              <p className="text-slate-500 font-bold text-base mb-3">{profileData.mail}</p>
 
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
                 <span className={`px-4 py-1.5 rounded-full font-black text-white text-sm shadow flex items-center gap-1.5 ${isPhotographer ? 'bg-accent-orange' : 'bg-accent-pink'}`}>
@@ -146,21 +141,21 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
           </div>
 
           {/* Quick tip */}
-          <p className="mt-5 text-xs text-slate-400 font-semibold text-center sm:text-left border-t-2 border-slate-100 pt-4">
+          <p className="mt-5 text-xs text-slate-500 font-semibold text-center sm:text-left border-t-2 border-slate-100 pt-4">
             💡 กดที่รูปโปรไฟล์เพื่อเปลี่ยนรูปได้เลย — กดปุ่มดินสอเพื่อแก้ชื่อ
           </p>
         </div>
 
         {/* ── Face Images (attendee only) ── */}
         {!isPhotographer && (
-          <form ref={photoFormRef} onSubmit={handlePhotoSubmit} className="bubbly-card p-7 sm:p-10 border-l-[6px] border-l-accent-pink">
+          <form ref={photoFormRef} onSubmit={handlePhotoSubmit} className="bubbly-card p-7 sm:p-10 border-t-[6px] border-t-accent-pink">
             <h2 className="text-2xl font-black text-slate-800 mb-1 flex items-center gap-3">
               <User className="w-6 h-6 text-accent-pink" /> รูปใบหน้าอ้างอิง
             </h2>
-            <p className="text-slate-400 font-medium text-sm mb-6">ระบบ AI ใช้รูปเหล่านี้ค้นหาตัวคุณในงาน กรุณาถ่ายให้เห็นหน้าชัดเจน</p>
+            <p className="text-slate-500 font-medium text-sm mb-6">ระบบ AI ใช้รูปเหล่านี้ค้นหาตัวคุณในงาน กรุณาถ่ายให้เห็นหน้าชัดเจน</p>
 
             {photoMsg && (
-              <div className={`mb-5 p-3 rounded-2xl font-bold text-sm border-2 ${photoMsg.type === 'ok' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{photoMsg.text}</div>
+              <div role={photoMsg.type === 'err' ? 'alert' : 'status'} className={`mb-5 p-3 rounded-2xl font-bold text-sm border-2 ${photoMsg.type === 'ok' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{photoMsg.text}</div>
             )}
 
             <div className="grid grid-cols-3 gap-4 mb-6">
@@ -178,7 +173,7 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
                       ) : (
                         <div className="flex flex-col items-center gap-1">
                           <Camera className="w-7 h-7 text-slate-300" />
-                          <span className="text-slate-400 font-bold text-xs">อัปโหลด</span>
+                          <span className="text-slate-500 font-bold text-xs">อัปโหลด</span>
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -200,13 +195,13 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
 
         {/* Profile photo form for photographer (separate) */}
         {isPhotographer && (
-          <form ref={photoFormRef} onSubmit={handlePhotoSubmit} className="bubbly-card p-7 sm:p-10 border-l-[6px] border-l-accent-orange">
+          <form ref={photoFormRef} onSubmit={handlePhotoSubmit} className="bubbly-card p-7 sm:p-10 border-t-[6px] border-t-accent-orange">
             <h2 className="text-2xl font-black text-slate-800 mb-5 flex items-center gap-3">
               <ImageIcon className="w-6 h-6 text-accent-orange" /> เปลี่ยนรูปโปรไฟล์
             </h2>
 
             {photoMsg && (
-              <div className={`mb-4 p-3 rounded-2xl font-bold text-sm border-2 ${photoMsg.type === 'ok' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{photoMsg.text}</div>
+              <div role={photoMsg.type === 'err' ? 'alert' : 'status'} className={`mb-4 p-3 rounded-2xl font-bold text-sm border-2 ${photoMsg.type === 'ok' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{photoMsg.text}</div>
             )}
 
             <input type="file" name="profile" accept="image/*" onChange={(e) => handleFileChange(e, 'profile')}
@@ -219,25 +214,25 @@ export default function ProfileClient({ profileData }: { profileData: any }) {
         )}
 
         {/* ── Change Password ── */}
-        <form ref={pwFormRef} onSubmit={handlePasswordSubmit} className="bubbly-card p-7 sm:p-10 border-l-[6px] border-l-slate-300">
+        <form ref={pwFormRef} onSubmit={handlePasswordSubmit} className="bubbly-card p-7 sm:p-10">
           <h2 className="text-2xl font-black text-slate-800 mb-5 flex items-center gap-3">
             <ShieldCheck className="w-6 h-6 text-slate-400" /> เปลี่ยนรหัสผ่าน
           </h2>
 
           {pwMsg && (
-            <div className={`mb-4 p-3 rounded-2xl font-bold text-sm border-2 ${pwMsg.type === 'ok' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{pwMsg.text}</div>
+            <div role={pwMsg.type === 'err' ? 'alert' : 'status'} className={`mb-4 p-3 rounded-2xl font-bold text-sm border-2 ${pwMsg.type === 'ok' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{pwMsg.text}</div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div className="flex flex-col gap-1.5">
-              <label className="font-extrabold text-slate-600 text-sm pl-1">รหัสผ่านปัจจุบัน</label>
-              <input type="password" name="currentPassword" required placeholder="••••••••"
-                className="w-full px-5 py-3.5 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 outline-none focus:border-slate-300 transition-colors" />
+              <label htmlFor="pw-current" className="font-extrabold text-slate-600 text-sm pl-1">รหัสผ่านปัจจุบัน</label>
+              <input id="pw-current" type="password" name="currentPassword" required autoComplete="current-password" placeholder="••••••••"
+                className="w-full px-5 py-3.5 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 outline-none focus:border-accent-orange focus:ring-4 focus:ring-accent-orange/20 transition-colors placeholder:text-slate-500" />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="font-extrabold text-slate-600 text-sm pl-1">รหัสผ่านใหม่</label>
-              <input type="password" name="newPassword" required placeholder="••••••••"
-                className="w-full px-5 py-3.5 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 outline-none focus:border-slate-300 transition-colors" />
+              <label htmlFor="pw-new" className="font-extrabold text-slate-600 text-sm pl-1">รหัสผ่านใหม่</label>
+              <input id="pw-new" type="password" name="newPassword" required autoComplete="new-password" placeholder="••••••••"
+                className="w-full px-5 py-3.5 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 outline-none focus:border-accent-orange focus:ring-4 focus:ring-accent-orange/20 transition-colors placeholder:text-slate-500" />
             </div>
           </div>
 

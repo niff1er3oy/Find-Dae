@@ -7,12 +7,21 @@
   --accent-peach: #ffc2a1; /* Soft pastel peach */
   --accent-yellow: #ffe066; /* Happy yellow for accents */
   --accent-pink: #ffb8d1; /* Fun pastel pink */
-  
+  --ink-muted: #64748b;
+  --primary-deep: #cc5500;
+  --secondary-deep: #be185d;
+  --surface: #ffffff;
+
   --card-bg: rgba(255, 255, 255, 0.85); /* Frosty white glass */
   --card-border: rgba(255, 140, 66, 0.15); /* Subtle orange border */
-  
+
   --shadow-soft: 0 10px 40px -10px rgba(255, 140, 66, 0.15);
   --shadow-hover: 0 20px 50px -10px rgba(255, 140, 66, 0.25);
+
+  /* Easing tokens */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1); /* brand spring — intentional overshoot */
 }
 
 @theme inline {
@@ -22,15 +31,22 @@
   --color-accent-peach: var(--accent-peach);
   --color-accent-yellow: var(--accent-yellow);
   --color-accent-pink: var(--accent-pink);
-  
+  --color-ink-muted: var(--ink-muted);
+  --color-primary-deep: var(--primary-deep);
+  --color-secondary-deep: var(--secondary-deep);
+  --color-surface: var(--surface);
+
   --color-card-bg: var(--card-bg);
   --color-card-border: var(--card-border);
-  
+
   --shadow-soft: var(--shadow-soft);
   --shadow-hover: var(--shadow-hover);
-  
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Fluid type scale — brand/landing headings */
+  --text-hero: clamp(2.25rem, 4vw + 1rem, 4.5rem);
+  --text-hero--line-height: 1.1;
+  --text-display: clamp(1.875rem, 3vw + 0.75rem, 3rem);
+  --text-display--line-height: 1.2;
 }
 
 /* ===== Base Styles ===== */
@@ -38,6 +54,8 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans, "Inter", system-ui, sans-serif);
+  font-optical-sizing: auto;
+  font-kerning: normal;
   overflow-x: hidden;
   /* Fun background pattern (Polka dots) */
   background-image: radial-gradient(var(--accent-peach) 1px, transparent 1px);
@@ -48,7 +66,12 @@ body {
 /* ===== Typography ===== */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 800;
-  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 /* ===== Animations ===== */
@@ -72,10 +95,32 @@ h1, h2, h3, h4, h5, h6 {
   50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
 }
 
-.animate-float-soft { animation: float-soft 6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-.animate-bounce-slow { animation: bounce-slow 4s ease-in-out infinite; }
-.animate-spin-slow { animation: spin-slow 20s linear infinite; }
-.animate-blob { animation: blob-shape 8s ease-in-out infinite alternate; }
+.animate-float-soft  { animation: float-soft  6s  cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.animate-bounce-slow { animation: bounce-slow 4s  ease-in-out infinite; }
+.animate-spin-slow   { animation: spin-slow   20s linear infinite; }
+.animate-blob        { animation: blob-shape  8s  ease-in-out infinite alternate; }
+
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.92) translateY(4px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+@keyframes bounce-short {
+  0%, 100% { transform: translateY(0); }
+  20%       { transform: translateY(-8px); }
+  40%       { transform: translateY(0); }
+  60%       { transform: translateY(-4px); }
+  80%       { transform: translateY(0); }
+}
+
+.animate-pop-in      { animation: pop-in       280ms var(--ease-out-quart) both; }
+.animate-bounce-short { animation: bounce-short 600ms cubic-bezier(0.4, 0, 0.2, 1) 1; }
+.animate-fade-in     { animation: fade-in       200ms var(--ease-out-quart) both; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 /* ===== Bubbly Card ===== */
 .bubbly-card {
@@ -85,29 +130,15 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-backdrop-filter: blur(12px);
   border-radius: 32px;
   box-shadow: var(--shadow-soft);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy config */
+  transition: transform 0.4s var(--ease-spring),
+              box-shadow 0.4s var(--ease-spring),
+              border-color 0.3s var(--ease-out-quart);
 }
 
 .bubbly-card:hover {
   transform: translateY(-8px) scale(1.02);
   box-shadow: var(--shadow-hover);
   border-color: rgba(255, 140, 66, 0.3);
-}
-
-/* ===== Gradient Text ===== */
-.gradient-text-fun {
-  background: linear-gradient(135deg, #ff8c42, #ff6b35, #ffb8d1);
-  background-size: 200% 200%;
-  animation: bg-shift 4s ease infinite;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@keyframes bg-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 /* ===== Playful Buttons ===== */
@@ -118,20 +149,20 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   border-radius: 9999px;
   padding: 16px 36px;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
-  box-shadow: 0 8px 0 #cc5500, 0 15px 20px rgba(255, 107, 53, 0.3); /* 3D effect */
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-out-quart);
+  box-shadow: 0 8px 0 var(--primary-deep), 0 15px 20px rgba(255, 107, 53, 0.3);
   border: none;
   cursor: pointer;
 }
 
 .btn-primary:active {
   transform: translateY(8px);
-  box-shadow: 0 0px 0 #cc5500, 0 5px 10px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 0px 0 var(--primary-deep), 0 5px 10px rgba(255, 107, 53, 0.3);
 }
 
 .btn-primary:hover:not(:active) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 0 #cc5500, 0 20px 25px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 10px 0 var(--primary-deep), 0 20px 25px rgba(255, 107, 53, 0.4);
 }
 
 .btn-secondary {
@@ -141,7 +172,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 9999px;
   padding: 16px 36px;
   border: 3px solid var(--accent-orange);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-out-quart);
   box-shadow: 0 6px 0 var(--accent-peach);
   cursor: pointer;
 }
@@ -159,15 +190,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-pink {
   background: linear-gradient(135deg, #f472b6, #ec4899);
-  box-shadow: 0 8px 0 #be185d, 0 15px 20px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 8px 0 var(--secondary-deep), 0 15px 20px rgba(236, 72, 153, 0.3);
 }
 
 .btn-pink:active {
-  box-shadow: 0 0px 0 #be185d, 0 5px 10px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 0px 0 var(--secondary-deep), 0 5px 10px rgba(236, 72, 153, 0.3);
 }
 
 .btn-pink:hover:not(:active) {
-  box-shadow: 0 10px 0 #be185d, 0 20px 25px rgba(236, 72, 153, 0.4);
+  box-shadow: 0 10px 0 var(--secondary-deep), 0 20px 25px rgba(236, 72, 153, 0.4);
 }
 
 /* ===== Decorative Blobs ===== */
@@ -177,11 +208,6 @@ h1, h2, h3, h4, h5, h6 {
   z-index: -1;
   border-radius: 50%;
   opacity: 0.6;
-}
-
-/* ===== Navigation Hide/Show Transition ===== */
-html.scroll-smooth {
-  scroll-behavior: smooth;
 }
 
 /* ===== Custom Selection ===== */
@@ -199,6 +225,15 @@ html.scroll-smooth {
   border: 3px solid var(--background); 
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
+
+/* ===== Custom Scrollbar (panel variant — thinner) ===== */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--accent-peach);
+  border-radius: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
 
 /* ===== Mobile Optimizations ===== */
 @media (max-width: 640px) {
@@ -228,5 +263,40 @@ html.scroll-smooth {
   body {
     padding-left: max(0px, env(safe-area-inset-left));
     padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* ===== Reduced Motion — must be last to win cascade ===== */
+@media (prefers-reduced-motion: reduce) {
+  /* Stop all looping atmospheric animations */
+  .animate-float-soft,
+  .animate-bounce-slow,
+  .animate-spin-slow,
+  .animate-blob {
+    animation: none;
+  }
+
+  /* Collapse entrance and feedback animations to instant */
+  .animate-pop-in,
+  .animate-bounce-short,
+  .animate-fade-in {
+    animation: none;
+  }
+
+  /* Collapse card hover choreography; functional states remain */
+  .bubbly-card {
+    transition: none;
+  }
+
+  /* Suppress bouncy button transforms; shadow feedback still fires */
+  .btn-primary,
+  .btn-secondary {
+    transition: box-shadow 0.15s linear;
+  }
+  .btn-primary:hover:not(:active),
+  .btn-primary:active,
+  .btn-secondary:hover:not(:active),
+  .btn-secondary:active {
+    transform: none;
   }
 }

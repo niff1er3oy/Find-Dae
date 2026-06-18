@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState, useTransition, Suspense } from "react";
 import { animate, stagger, utils } from "animejs";
 import { loginAction } from "@/app/actions/auth";
@@ -12,14 +11,6 @@ function IconArrowLeft({ className = "" }: { className?: string }) {
     <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
       <line x1="19" y1="12" x2="5" y2="12"></line>
       <polyline points="12 19 5 12 12 5"></polyline>
-    </svg>
-  );
-}
-
-function IconSearch({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
     </svg>
   );
 }
@@ -49,7 +40,8 @@ function LoginContent() {
   const registered = searchParams.get("registered") === "true";
 
   useEffect(() => {
-    // Float and Bounce background blobs
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
     animate(".bg-bubble", {
       translateY: () => utils.random(-40, 40),
       translateX: () => utils.random(-40, 40),
@@ -59,8 +51,6 @@ function LoginContent() {
       loop: true,
       ease: "inOutQuad"
     });
-
-    // Playful Form Entry Animation
     animate(".form-element", {
       opacity: [0, 1],
       translateY: [40, 0],
@@ -109,41 +99,40 @@ function LoginContent() {
           <form className="flex flex-col gap-6" action={handleSubmit}>
             
             {registered && (
-              <div className="form-element bg-green-50 border-2 border-green-300 text-green-700 font-bold px-4 py-3 rounded-2xl text-center">
+              <div role="status" className="form-element bg-green-50 border-2 border-green-300 text-green-700 font-bold px-4 py-3 rounded-2xl text-center">
                 สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ
               </div>
             )}
 
             {errorMsg && (
-              <div className="form-element bg-red-50 border-2 border-red-300 text-red-600 font-bold px-4 py-3 rounded-2xl text-center animate-pulse">
+              <div role="alert" className="form-element bg-red-50 border-2 border-red-300 text-red-600 font-bold px-4 py-3 rounded-2xl text-center">
                 {errorMsg}
               </div>
             )}
 
             <div className="form-element flex flex-col gap-2">
-              <label className="font-extrabold text-slate-700 pl-2">อีเมล</label>
-              <input 
-                type="email" 
+              <label htmlFor="login-mail" className="font-extrabold text-slate-700 pl-2">อีเมล</label>
+              <input
+                id="login-mail"
+                type="email"
                 name="mail"
                 required
-                placeholder="sommai@example.com" 
-                className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all placeholder:text-slate-300"
+                autoComplete="email"
+                placeholder="sommai@example.com"
+                className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all placeholder:text-slate-500"
               />
             </div>
 
             <div className="form-element flex flex-col gap-2 relative">
-              <div className="flex justify-between items-center pr-2">
-                <label className="font-extrabold text-slate-700 pl-2">รหัสผ่าน</label>
-                <a href="#" className="font-bold text-sm text-accent-orange hover:text-orange-600 transition-colors">
-                  ลืมรหัสผ่านใช่ไหม?
-                </a>
-              </div>
-              <input 
+              <label htmlFor="login-password" className="font-extrabold text-slate-700 pl-2">รหัสผ่าน</label>
+              <input
+                id="login-password"
                 type="password"
                 name="password"
-                required 
-                placeholder="กรอกรหัสผ่านของคุณ" 
-                className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all placeholder:text-slate-300"
+                required
+                autoComplete="current-password"
+                placeholder="กรอกรหัสผ่านของคุณ"
+                className="w-full px-5 py-4 rounded-2xl border-4 border-slate-100 bg-white font-bold text-slate-800 focus:border-accent-orange focus:outline-none focus:ring-4 focus:ring-accent-orange/20 transition-all placeholder:text-slate-500"
               />
             </div>
 
