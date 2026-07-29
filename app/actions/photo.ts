@@ -96,7 +96,7 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 // แยก Action สำหรับยิงหา AI เพื่อให้หน้าบ้านเอาไว้ทำแอนิเมชัน "รอรีพอร์ต"
 export async function callAIForReportAction(eventId: string, folder_path: string) {
   try {
-    const res = await fetch('http://localhost:8055/photographers', {
+    const res = await fetch('http://127.0.0.1:8055/photographers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -123,7 +123,7 @@ export async function checkAiServerAction() {
     const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     // ลองส่งคำขอเบากระจิ๋วหลิวแค่ HEAD ไปเช็กว่าสายว่างไหม
-    await fetch('http://localhost:8055/', { method: 'HEAD', signal: controller.signal });
+    await fetch('http://127.0.0.1:8055/', { method: 'HEAD', signal: controller.signal });
     clearTimeout(timeoutId);
 
     // ถ้ารอดผ่านตัว fetch มาได้ (ไม่ว่าจะตอบ 404/405) แปลว่าเซิร์ฟเวอร์ตื่นอยู่ตอบกลับมา
@@ -183,7 +183,7 @@ export async function callAISearchAction(eventId: string) {
   if (!user) return { success: false, error: 'กรุณาเข้าสู่ระบบก่อนทำรายการ' };
 
   try {
-    const res = await fetch('http://localhost:8055/attendee', {
+    const res = await fetch('http://127.0.0.1:8055/attendee', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

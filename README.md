@@ -16,6 +16,7 @@ Find Dae แก้ปัญหา "ถ่ายรูปงานเยอะม
 ## คุณสมบัติหลัก
 
 ### สำหรับตากล้อง
+
 - สร้างและจัดการอีเวนต์พร้อมโปสเตอร์
 - ตั้งรหัสผ่าน PIN เพื่อคุ้มครองความเป็นส่วนตัว
 - อัปโหลดรูปภาพงานได้ครั้งละสูงสุด 500 รูป (ไม่เกิน 5 MB ต่อรูป)
@@ -24,6 +25,7 @@ Find Dae แก้ปัญหา "ถ่ายรูปงานเยอะม
 - แดชบอร์ดแสดงสถิติรูปและงานทั้งหมด
 
 ### สำหรับผู้เข้าร่วม
+
 - ลงทะเบียนพร้อมรูปใบหน้า 3 มุม (ใช้สำหรับ AI เปรียบเทียบ)
 - ค้นหาหน้าตัวเองในงานอีเวนต์ที่ต้องการ
 - ดูแกลเลอรีเฉพาะรูปที่มีตัวเองปรากฏอยู่
@@ -33,18 +35,18 @@ Find Dae แก้ปัญหา "ถ่ายรูปงานเยอะม
 
 ## Tech Stack
 
-| หมวด | เทคโนโลยี |
-|---|---|
-| Frontend Framework | Next.js 16.2.1 (App Router) |
-| UI Library | React 19 |
-| Styling | Tailwind CSS v4 |
-| Animation | anime.js v4 |
-| Icons | Lucide React |
-| Font | Nunito (Google Fonts) |
-| Language | TypeScript 5 |
-| Database | MySQL 8 via mysql2 |
-| Authentication | JWT (jose) + bcryptjs |
-| File Compression | 7-Zip (7zip-bin + node-7z) |
+| หมวด                | เทคโนโลยี                           |
+| ------------------- | ----------------------------------- |
+| Frontend Framework  | Next.js 16.2.1 (App Router)         |
+| UI Library          | React 19                            |
+| Styling             | Tailwind CSS v4                     |
+| Animation           | anime.js v4                         |
+| Icons               | Lucide React                        |
+| Font                | Nunito (Google Fonts)               |
+| Language            | TypeScript 5                        |
+| Database            | MySQL 8 via mysql2                  |
+| Authentication      | JWT (jose) + bcryptjs               |
+| File Compression    | 7-Zip (7zip-bin + node-7z)          |
 | AI Face Recognition | Python Server (รันแยก บน port 8055) |
 
 ---
@@ -116,11 +118,11 @@ find-dae/
 
 ## ความต้องการเบื้องต้น
 
-| รายการ | เวอร์ชัน |
-|---|---|
-| Node.js | 20 ขึ้นไป |
-| npm | 9 ขึ้นไป |
-| MySQL | 8.0 ขึ้นไป |
+| รายการ             | เวอร์ชัน    |
+| ------------------ | ----------- |
+| Node.js            | 20 ขึ้นไป   |
+| npm                | 9 ขึ้นไป    |
+| MySQL              | 8.0 ขึ้นไป  |
 | AI Server (Python) | ดูเอกสารแยก |
 
 > path เก็บไฟล์กำหนดได้ผ่านตัวแปร `UPLOAD_DIR` ใน `.env` — ดูหัวข้อ [ตั้งค่า File Storage](#ตั้งค่า-file-storage)
@@ -166,18 +168,21 @@ UPLOAD_DIR=D:\find_dae_photos
 สร้างโฟลเดอร์สำหรับเก็บรูปภาพ ให้ตรงกับ `UPLOAD_DIR` ที่ตั้งไว้ใน `.env`:
 
 **Windows (PowerShell):**
+
 ```powershell
 New-Item -ItemType Directory -Force "D:\find_dae_photos\member"
 New-Item -ItemType Directory -Force "D:\find_dae_photos\events"
 ```
 
 **Linux / macOS:**
+
 ```bash
 mkdir -p "$HOME/find_dae_photos/member" "$HOME/find_dae_photos/events"
 # แล้วตั้งใน .env: UPLOAD_DIR=/home/you/find_dae_photos
 ```
 
 วาง `default-profile.png` ไว้ใน `member\` เพื่อให้รูปโปรไฟล์ default ใช้งานได้:
+
 ```
 D:\find_dae_photos\member\default-profile.png
 ```
@@ -195,12 +200,12 @@ mysql -u root -p find_dae < find_dae.sql
 
 ### 6. เริ่มต้น AI Server
 
-**ต้องรัน AI Server ก่อนใช้งานฟีเจอร์ค้นหาใบหน้า** — server ต้องรันที่ `http://localhost:8055`
+**ต้องรัน AI Server ก่อนใช้งานฟีเจอร์ค้นหาใบหน้า** — server ต้องรันที่ `http://127.0.0.1:8055`
 
-| Endpoint | Method | Body | คำอธิบาย |
-|---|---|---|---|
-| `/photographers` | POST | `{ event_id, folder_path }` | วิเคราะห์ใบหน้าในรูปทั้งหมดของงาน |
-| `/attendee` | POST | `{ event_id, member_id }` | ค้นหาใบหน้าของสมาชิกในงาน |
+| Endpoint         | Method | Body                        | คำอธิบาย                          |
+| ---------------- | ------ | --------------------------- | --------------------------------- |
+| `/photographers` | POST   | `{ event_id, folder_path }` | วิเคราะห์ใบหน้าในรูปทั้งหมดของงาน |
+| `/attendee`      | POST   | `{ event_id, member_id }`   | ค้นหาใบหน้าของสมาชิกในงาน         |
 
 ดูวิธีติดตั้งและรัน AI Server ใน repository แยกต่างหาก
 
@@ -216,15 +221,15 @@ npm run dev
 
 ## Environment Variables
 
-| ตัวแปร | คำอธิบาย | ตัวอย่าง | จำเป็น |
-|---|---|---|---|
-| `DB_HOST` | MySQL host | `localhost` | ✅ |
-| `DB_PORT` | MySQL port | `3306` | ✅ |
-| `DB_USER` | MySQL username | `root` | ✅ |
-| `DB_PASSWORD` | MySQL password | `secret` | ✅ |
-| `DB_NAME` | ชื่อฐานข้อมูล | `find_dae` | ✅ |
-| `JWT_SECRET` | Secret key สำหรับ sign JWT | random string ≥ 32 ตัวอักษร | ✅ |
-| `NODE_ENV` | สภาพแวดล้อม | `development` / `production` | ⬜ |
+| ตัวแปร        | คำอธิบาย                   | ตัวอย่าง                     | จำเป็น |
+| ------------- | -------------------------- | ---------------------------- | ------ |
+| `DB_HOST`     | MySQL host                 | `localhost`                  | ✅     |
+| `DB_PORT`     | MySQL port                 | `3306`                       | ✅     |
+| `DB_USER`     | MySQL username             | `root`                       | ✅     |
+| `DB_PASSWORD` | MySQL password             | `secret`                     | ✅     |
+| `DB_NAME`     | ชื่อฐานข้อมูล              | `find_dae`                   | ✅     |
+| `JWT_SECRET`  | Secret key สำหรับ sign JWT | random string ≥ 32 ตัวอักษร  | ✅     |
+| `NODE_ENV`    | สภาพแวดล้อม                | `development` / `production` | ⬜     |
 
 > **คำเตือน:** ห้าม commit ไฟล์ `.env` ขึ้น version control เด็ดขาด
 
@@ -243,12 +248,12 @@ npm run start
 
 ## API Routes
 
-| Method | Path | คำอธิบาย | Auth |
-|---|---|---|---|
-| `GET` | `/api/image/[filename]` | เสิร์ฟรูปโปรไฟล์และรูปใบหน้าสมาชิก | — |
-| `GET` | `/api/event-image/[filename]` | เสิร์ฟโปสเตอร์งานอีเวนต์ | — |
-| `GET` | `/api/event-photo/[eventId]/[filename]` | เสิร์ฟรูปภาพในงาน | — |
-| `GET` | `/api/download-event/[eventId]` | ดาวน์โหลดรูปทั้งงานเป็นไฟล์ `.zip` | ตากล้อง |
+| Method | Path                                    | คำอธิบาย                           | Auth    |
+| ------ | --------------------------------------- | ---------------------------------- | ------- |
+| `GET`  | `/api/image/[filename]`                 | เสิร์ฟรูปโปรไฟล์และรูปใบหน้าสมาชิก | —       |
+| `GET`  | `/api/event-image/[filename]`           | เสิร์ฟโปสเตอร์งานอีเวนต์           | —       |
+| `GET`  | `/api/event-photo/[eventId]/[filename]` | เสิร์ฟรูปภาพในงาน                  | —       |
+| `GET`  | `/api/download-event/[eventId]`         | ดาวน์โหลดรูปทั้งงานเป็นไฟล์ `.zip` | ตากล้อง |
 
 > ฟีเจอร์ทั้งหมดนอกจาก API routes ดำเนินการผ่าน Next.js Server Actions
 
@@ -311,10 +316,10 @@ event_access
 
 ## Screenshots
 
-> *(เพิ่ม screenshots ที่นี่)*
+> _(เพิ่ม screenshots ที่นี่)_
 
-| หน้าหลัก | หน้าอีเวนต์ | แกลเลอรี |
-|---|---|---|
+| หน้าหลัก                           | หน้าอีเวนต์                            | แกลเลอรี                                 |
+| ---------------------------------- | -------------------------------------- | ---------------------------------------- |
 | ![Home](docs/screenshots/home.png) | ![Events](docs/screenshots/events.png) | ![Gallery](docs/screenshots/gallery.png) |
 
 ---
