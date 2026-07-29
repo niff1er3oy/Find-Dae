@@ -12,7 +12,7 @@ import { Settings, Users } from "lucide-react";
 import EventAnimations from "./EventAnimations";
 
 type EventPhoto = { id: number; image_path: string; photographer_id?: number };
-type Collaborator = { id?: number; member_id?: number; name: string; profile?: string };
+type Collaborator = { id?: number; member_id?: number; name: string; profile?: string | null };
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

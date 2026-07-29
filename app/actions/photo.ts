@@ -5,9 +5,16 @@ import { getUserAction } from './auth';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import path from 'path';
 import { checkEventRoleAction } from './event';
+import type { RowDataPacket } from 'mysql2';
 
 const UPLOAD_DIR_BASE = 'D:\\find_dae_photos\\events';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+interface PhotoRow extends RowDataPacket {
+  id: number;
+  image_path: string;
+  photographer_id: number;
+}
 
 export async function uploadMultiplePhotosAction(eventId: string, formData: FormData) {
   const user = await getUserAction();
@@ -132,7 +139,7 @@ export async function checkAiServerAction() {
 // ---------------------------------------------------------------------------
 export async function getEventPhotosAction(eventId: string) {
   try {
-    const [photos] = await pool.query<import('mysql2').RowDataPacket[]>(
+    const [photos] = await pool.query<PhotoRow[]>(
       'SELECT id, image_path, photographer_id FROM photos WHERE event_id = ? ORDER BY id DESC',
       [eventId]
     );
@@ -151,12 +158,12 @@ export async function getMyEventPhotosAction(eventId: string) {
   if (!user) return [];
 
   try {
-    const [photos] = await pool.query<import('mysql2').RowDataPacket[]>(
-      `SELECT p.id, p.image_path, p.photographer_id 
-       FROM photos p 
-       JOIN face f ON p.id = f.photos_id 
-       WHERE f.attendee_id = ? AND p.event_id = ? 
-       GROUP BY p.id 
+    const [photos] = await pool.query<PhotoRow[]>(
+      `SELECT p.id, p.image_path, p.photographer_id
+       FROM photos p
+       JOIN face f ON p.id = f.photos_id
+       WHERE f.attendee_id = ? AND p.event_id = ?
+       GROUP BY p.id
        ORDER BY p.id DESC`,
       [user.id, eventId]
     );

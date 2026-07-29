@@ -354,9 +354,18 @@ export async function updateEventAction(eventId: string, formData: FormData) {
 // 7. ระบบการจัดการผู้ดูแลร่วม (Event Collaborators)
 // ---------------------------------------------------------------------------
 
+interface CollaboratorRow extends RowDataPacket {
+  id: number;
+  role: string;
+  member_id: number;
+  name: string;
+  mail: string;
+  profile: string | null;
+}
+
 export async function getEventCollaboratorsAction(eventId: string) {
   try {
-    const [collabs] = await pool.query<RowDataPacket[]>(`
+    const [collabs] = await pool.query<CollaboratorRow[]>(`
       SELECT ec.id, ec.role, m.id as member_id, m.name, m.mail, m.profile
       FROM event_collaborators ec
       JOIN member m ON ec.photographer_id = m.id
