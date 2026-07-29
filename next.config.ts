@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',
+      allowedOrigins: ['find-dae.niff1er-3oy.com', '192.168.1.27'],
     },
   },
   turbopack: {
