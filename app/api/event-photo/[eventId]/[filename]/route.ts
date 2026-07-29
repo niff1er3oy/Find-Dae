@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import path from 'path';
-
-const UPLOAD_DIR_BASE = 'D:\\find_dae_photos\\events';
+import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
 
 export async function GET(
   request: NextRequest,

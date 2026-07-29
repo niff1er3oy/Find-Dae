@@ -7,10 +7,9 @@ import { cookies } from 'next/headers';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { MEMBER_UPLOAD_DIR as UPLOAD_DIR } from '@/lib/uploadDirs';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'find-dae-my-super-secret-key-32-bytes-long');
-
-const UPLOAD_DIR = 'D:\\find_dae_photos\\member';
 
 // Helper to save uploaded file
 async function saveUserFile(file: File | null, filenamePrefix: string): Promise<string | null> {

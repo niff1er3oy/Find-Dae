@@ -123,7 +123,7 @@ find-dae/
 | MySQL | 8.0 ขึ้นไป |
 | AI Server (Python) | ดูเอกสารแยก |
 
-> **Windows เท่านั้น (ปัจจุบัน):** path เก็บไฟล์ถูก hardcode เป็น `D:\find_dae_photos\` — ดูหัวข้อ [ตั้งค่า File Storage](#ตั้งค่า-file-storage)
+> path เก็บไฟล์กำหนดได้ผ่านตัวแปร `UPLOAD_DIR` ใน `.env` — ดูหัวข้อ [ตั้งค่า File Storage](#ตั้งค่า-file-storage)
 
 ---
 
@@ -156,11 +156,14 @@ DB_NAME=find_dae
 
 # JWT (ใส่ random string ยาวอย่างน้อย 32 ตัวอักษร)
 JWT_SECRET=your-super-secret-key-at-least-32-chars-long
+
+# File Storage (โฟลเดอร์เก็บรูปภาพทั้งหมด)
+UPLOAD_DIR=D:\find_dae_photos
 ```
 
 ### 4. ตั้งค่า File Storage
 
-สร้างโฟลเดอร์สำหรับเก็บรูปภาพ:
+สร้างโฟลเดอร์สำหรับเก็บรูปภาพ ให้ตรงกับ `UPLOAD_DIR` ที่ตั้งไว้ใน `.env`:
 
 **Windows (PowerShell):**
 ```powershell
@@ -168,15 +171,16 @@ New-Item -ItemType Directory -Force "D:\find_dae_photos\member"
 New-Item -ItemType Directory -Force "D:\find_dae_photos\events"
 ```
 
+**Linux / macOS:**
+```bash
+mkdir -p "$HOME/find_dae_photos/member" "$HOME/find_dae_photos/events"
+# แล้วตั้งใน .env: UPLOAD_DIR=/home/you/find_dae_photos
+```
+
 วาง `default-profile.png` ไว้ใน `member\` เพื่อให้รูปโปรไฟล์ default ใช้งานได้:
 ```
 D:\find_dae_photos\member\default-profile.png
 ```
-
-> **Linux / macOS:** path ถูก hardcode ในโค้ด ต้องแก้ด้วยมือในไฟล์ต่อไปนี้:
-> `app/actions/auth.ts`, `app/actions/event.ts`, `app/actions/photo.ts`,
-> `app/api/image/[filename]/route.ts`, `app/api/event-image/[filename]/route.ts`,
-> `app/api/event-photo/[eventId]/[filename]/route.ts`
 
 ### 5. ตั้งค่าฐานข้อมูล
 

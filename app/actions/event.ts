@@ -5,6 +5,7 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { getUserAction } from './auth';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { EVENTS_UPLOAD_DIR as UPLOAD_DIR } from '@/lib/uploadDirs';
 
 export async function checkEventRoleAction(eventId: string) {
   const user = await getUserAction();
@@ -24,8 +25,6 @@ export async function checkEventRoleAction(eventId: string) {
 
   return 'none';
 }
-
-const UPLOAD_DIR = 'D:\\find_dae_photos\\events';
 
 // ---------------------------------------------------------------------------
 // 1. สร้างอีเวนต์ใหม่ (เฉพาะช่างภาพ)

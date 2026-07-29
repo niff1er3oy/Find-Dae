@@ -8,6 +8,17 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  turbopack: {
+    // UPLOAD_DIR (lib/uploadDirs.ts) points outside the project (configurable via .env),
+    // so Output File Tracing can't statically scope it and falls back to tracing the
+    // whole project. Harmless here since this app deploys via `next start`, not standalone.
+    ignoreIssue: [
+      {
+        path: 'next.config.ts',
+        title: 'Encountered unexpected file in NFT list',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

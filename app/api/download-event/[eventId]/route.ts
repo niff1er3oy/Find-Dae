@@ -6,14 +6,13 @@ import path from 'path';
 import { mkdir, rm } from 'fs/promises';
 import { existsSync, createReadStream } from 'fs';
 import { tmpdir } from 'os';
+import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Seven = require('node-7z');
 
 // path7za จาก 7zip-bin ถูก mangle โดย Next.js bundler ให้ใช้ \ROOT\ แทน
 // ต้อง resolve เองจาก process.cwd() แทน
 const sevenBinPath = path.join(process.cwd(), 'node_modules', '7zip-bin', 'win', 'x64', '7za.exe');
-
-const UPLOAD_DIR_BASE = 'D:\\find_dae_photos\\events';
 
 export async function GET(
   req: NextRequest,

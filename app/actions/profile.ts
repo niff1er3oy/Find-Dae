@@ -8,8 +8,7 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
-
-const UPLOAD_DIR = 'D:\\find_dae_photos\\member';
+import { MEMBER_UPLOAD_DIR as UPLOAD_DIR } from '@/lib/uploadDirs';
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'find-dae-my-super-secret-key-32-bytes-long');
 
 export async function getFullProfileAction() {

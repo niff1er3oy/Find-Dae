@@ -6,8 +6,8 @@ import { writeFile, mkdir, unlink } from 'fs/promises';
 import path from 'path';
 import { checkEventRoleAction } from './event';
 import type { RowDataPacket } from 'mysql2';
+import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
 
-const UPLOAD_DIR_BASE = 'D:\\find_dae_photos\\events';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 interface PhotoRow extends RowDataPacket {
