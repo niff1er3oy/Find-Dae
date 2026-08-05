@@ -4,7 +4,7 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import path from 'path';
 import { mkdir, rm } from 'fs/promises';
-import { existsSync, createReadStream } from 'fs';
+import { existsSync, createReadStream, chmodSync } from 'fs';
 import { tmpdir } from 'os';
 import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -24,6 +24,15 @@ function getSevenBinPath(): string {
 }
 
 const sevenBinPath = getSevenBinPath();
+
+// node_modules อาจถูกคัดลอกมาจากเครื่องอื่นและไม่ได้ตั้ง executable bit ไว้
+if (process.platform !== 'win32' && existsSync(sevenBinPath)) {
+  try {
+    chmodSync(sevenBinPath, 0o755);
+  } catch {
+    // ignore — จะ error ตอน spawn แทนถ้าแก้สิทธิ์ไม่ได้จริงๆ
+  }
+}
 
 export async function GET(
   req: NextRequest,
