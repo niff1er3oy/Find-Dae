@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { checkAiServerAction, callAISearchAction } from "@/app/actions/photo";
+import { checkAiServerAction, callAISearchAction, getAISearchProgressAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Bot, Search } from "lucide-react";
 
@@ -34,8 +34,41 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
     try {
        const aiRes = await callAISearchAction(eventId);
        if (aiRes.success) {
-         setProgressText(`AI ค้นหาเสร็จสิ้น!`);
-         setAiReport(aiRes.report || "ค้นหาเสร็จสิ้น (AI ไม่ดรอปรีพอร์ตกลับมา)");
+         // AI รับงานแล้ว ค้นหาอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
+         let finalMessage = "";
+         let pollError = "";
+         const maxAttempts = 80; // ~80 * 1.5s = 2 นาที กันวน poll ไม่รู้จบ
+
+         for (let attempt = 0; attempt < maxAttempts; attempt++) {
+           await new Promise((resolve) => setTimeout(resolve, 1500));
+           const progRes = await getAISearchProgressAction(eventId);
+
+           if (!progRes.success || !progRes.progress) {
+             pollError = progRes.error || "ไม่พบสถานะความคืบหน้า";
+             break;
+           }
+
+           const { status, message } = progRes.progress;
+           setProgressText(message || "กำลังค้นหา...");
+
+           if (status === "done") {
+             finalMessage = message;
+             break;
+           }
+           if (status === "error") {
+             pollError = message || "เกิดข้อผิดพลาดระหว่างค้นหา";
+             break;
+           }
+         }
+
+         if (finalMessage) {
+           setProgressText(`AI ค้นหาเสร็จสิ้น!`);
+           setAiReport(finalMessage);
+         } else if (pollError) {
+           setErrorMsg("ข้อผิดพลาดจาก AI: " + pollError);
+         } else {
+           setErrorMsg("รอผล AI นานเกินไป กรุณาลองใหม่ภายหลัง");
+         }
        } else {
          setErrorMsg("ข้อผิดพลาดจาก AI: " + aiRes.error);
        }

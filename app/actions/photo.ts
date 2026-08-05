@@ -218,13 +218,41 @@ export async function callAISearchAction(eventId: string) {
          member_id: String(user.id)
       })
     });
-    
-    // ดึงค่ารีพอร์ต (Report) กลับมาจาก AI
-    const reportText = await res.text();
-    return { success: true, report: reportText };
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => null);
+      return { success: false, error: errBody?.detail || 'AI Server ปฏิเสธคำขอ' };
+    }
+
+    return { success: true };
   } catch (apiError) {
     console.error('AI Searching API call failed:', apiError);
     return { success: false, error: 'AI Server ไม่ตอบสนอง หรือยังไม่ได้เปิดระบบ' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ดึงความคืบหน้าล่าสุดของการค้นหาใบหน้า (สำหรับ poll ระหว่างรอ AI ค้นหา)
+// ---------------------------------------------------------------------------
+export async function getAISearchProgressAction(eventId: string) {
+  const user = await getUserAction();
+  if (!user) return { success: false, error: 'กรุณาเข้าสู่ระบบก่อนทำรายการ' };
+
+  try {
+    const res = await fetch(`http://127.0.0.1:8055/attendee/${String(eventId)}/${String(user.id)}/status`, {
+      cache: 'no-store'
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => null);
+      return { success: false, error: errBody?.detail || 'ไม่พบสถานะความคืบหน้า' };
+    }
+
+    const progress = await res.json();
+    return { success: true, progress };
+  } catch (apiError) {
+    console.error('AI search progress polling failed:', apiError);
+    return { success: false, error: 'AI Server ไม่ตอบสนอง' };
   }
 }
 
