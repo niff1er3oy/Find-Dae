@@ -11,8 +11,19 @@ import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
 const Seven = require('node-7z');
 
 // path7za จาก 7zip-bin ถูก mangle โดย Next.js bundler ให้ใช้ \ROOT\ แทน
-// ต้อง resolve เองจาก process.cwd() แทน
-const sevenBinPath = path.join(process.cwd(), 'node_modules', '7zip-bin', 'win', 'x64', '7za.exe');
+// ต้อง resolve เองจาก process.cwd() แทน (ต้องเลือก binary ให้ตรงกับ platform/arch ที่รันจริง)
+function getSevenBinPath(): string {
+  const base = path.join(process.cwd(), 'node_modules', '7zip-bin');
+  if (process.platform === 'darwin') {
+    return path.join(base, 'mac', process.arch, '7za');
+  } else if (process.platform === 'win32') {
+    return path.join(base, 'win', process.arch, '7za.exe');
+  } else {
+    return path.join(base, 'linux', process.arch, '7za');
+  }
+}
+
+const sevenBinPath = getSevenBinPath();
 
 export async function GET(
   req: NextRequest,
