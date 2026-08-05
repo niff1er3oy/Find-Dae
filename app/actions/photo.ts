@@ -94,6 +94,8 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 }
 
 // แยก Action สำหรับยิงหา AI เพื่อให้หน้าบ้านเอาไว้ทำแอนิเมชัน "รอรีพอร์ต"
+// AI ฝั่ง Python จะรับงานแล้วประมวลผลใน background ทันที ไม่รอจนเสร็จ
+// ให้ฝั่ง front-end poll ความคืบหน้าต่อผ่าน getAIProgressAction แทน
 export async function callAIForReportAction(eventId: string, folder_path: string) {
   try {
     const res = await fetch('http://127.0.0.1:8055/photographers', {
@@ -105,12 +107,37 @@ export async function callAIForReportAction(eventId: string, folder_path: string
       })
     });
 
-    // ดึงค่ารีพอร์ต (Report) กลับมาจาก AI
-    const reportText = await res.text();
-    return { success: true, report: reportText };
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => null);
+      return { success: false, error: errBody?.detail || 'AI Server ปฏิเสธคำขอ' };
+    }
+
+    return { success: true };
   } catch (apiError) {
     console.error('AI Processing API call failed:', apiError);
     return { success: false, error: 'AI Server ไม่ตอบสนอง หรือยังไม่ได้เปิดระบบ' };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ดึงความคืบหน้าล่าสุดของการ index รูป (สำหรับ poll ระหว่างรอ AI สแกน)
+// ---------------------------------------------------------------------------
+export async function getAIProgressAction(eventId: string) {
+  try {
+    const res = await fetch(`http://127.0.0.1:8055/photographers/${String(eventId)}/status`, {
+      cache: 'no-store'
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => null);
+      return { success: false, error: errBody?.detail || 'ไม่พบสถานะความคืบหน้า' };
+    }
+
+    const progress = await res.json();
+    return { success: true, progress };
+  } catch (apiError) {
+    console.error('AI progress polling failed:', apiError);
+    return { success: false, error: 'AI Server ไม่ตอบสนอง' };
   }
 }
 

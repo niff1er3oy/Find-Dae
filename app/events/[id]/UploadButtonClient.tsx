@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { uploadMultiplePhotosAction, callAIForReportAction, checkAiServerAction } from "@/app/actions/photo";
+import { uploadMultiplePhotosAction, callAIForReportAction, getAIProgressAction, checkAiServerAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
 import { Camera, Bot, AlertTriangle } from "lucide-react";
 
@@ -64,8 +64,41 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
         try {
           const aiRes = await callAIForReportAction(eventId, res.folder_path!);
           if (aiRes.success) {
-            setProgressText(`AI สแกนเสร็จสิ้น!`);
-            setAiReport(aiRes.report || "ไม่มีรายละเอียดแจ้งกลับจาก AI");
+            // AI รับงานแล้ว ประมวลผลอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
+            let finalMessage = "";
+            let pollError = "";
+            const maxAttempts = 200; // ~200 * 1.5s = 5 นาที กันวน poll ไม่รู้จบ
+
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+              const progRes = await getAIProgressAction(eventId);
+
+              if (!progRes.success || !progRes.progress) {
+                pollError = progRes.error || "ไม่พบสถานะความคืบหน้า";
+                break;
+              }
+
+              const { status, message } = progRes.progress;
+              setProgressText(message || "กำลังประมวลผล...");
+
+              if (status === "done") {
+                finalMessage = message;
+                break;
+              }
+              if (status === "error") {
+                pollError = message || "เกิดข้อผิดพลาดระหว่างประมวลผล";
+                break;
+              }
+            }
+
+            if (finalMessage) {
+              setProgressText(`AI สแกนเสร็จสิ้น!`);
+              setAiReport(finalMessage);
+            } else if (pollError) {
+              setErrorMsg("อัปโหลดสำเร็จ แต่ " + pollError);
+            } else {
+              setErrorMsg("อัปโหลดสำเร็จ แต่รอผล AI นานเกินไป กรุณาตรวจสอบภายหลัง");
+            }
           } else {
             setErrorMsg("อัปโหลดสำเร็จ แต่ " + aiRes.error);
           }
