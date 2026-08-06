@@ -6,6 +6,7 @@ import { getUserAction } from './auth';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { EVENTS_UPLOAD_DIR as UPLOAD_DIR } from '@/lib/uploadDirs';
+import { generateWebpVariant, getWebpPath } from '@/lib/webp';
 
 export async function checkEventRoleAction(eventId: string) {
   const user = await getUserAction();
@@ -74,6 +75,7 @@ export async function createEventAction(formData: FormData) {
     const filePath = path.join(UPLOAD_DIR, filename);
 
     await writeFile(filePath, buffer);
+    await generateWebpVariant(filePath);
 
     // 3. Update ข้อความชื่อไฟล์โปสเตอร์และแพทโฟลเดอร์กลับเข้าไปใน Database
     await pool.query(
@@ -141,11 +143,16 @@ export async function deleteEventAction(eventId: string) {
   }
 
   try {
-    // 1. ดึงรายชื่อไฟล์รูปทั้งหมดในงานนี้ก่อนลบ
+    // 1. ดึงรายชื่อไฟล์รูปทั้งหมดในงานนี้ก่อนลบ (รวมโปสเตอร์)
     const [photoRows] = await pool.query<RowDataPacket[]>(
       'SELECT image_path FROM photos WHERE event_id = ?',
       [eventId]
     );
+    const [posterRows] = await pool.query<RowDataPacket[]>(
+      'SELECT poster FROM events WHERE id = ?',
+      [eventId]
+    );
+    const posterFilename = posterRows[0]?.poster as string | undefined;
 
     // 2. ลบ child rows (face) → photos → event ตามลำดับ FK
     await pool.query('DELETE FROM event_collaborators WHERE event_id = ?', [eventId]);
@@ -156,18 +163,38 @@ export async function deleteEventAction(eventId: string) {
     await pool.query('DELETE FROM photos WHERE event_id = ?', [eventId]);
     await pool.query('DELETE FROM events WHERE id = ?', [eventId]);
 
-    // 3. ลบไฟล์รูปทั้งหมดออกจาก disk
+    // 3. ลบไฟล์รูปทั้งหมดออกจาก disk (ทั้งต้นฉบับและ .webp คู่กัน — ไม่งั้น .webp ที่เหลือค้างจะทำให้ rmdir ด้านล่างล้มเหลว)
     const { unlink, rmdir } = await import('fs/promises');
     for (const row of photoRows as any[]) {
+      const filePath = path.join(UPLOAD_DIR, String(eventId), row.image_path);
       try {
-        const filePath = path.join(UPLOAD_DIR, String(eventId), row.image_path);
         await unlink(filePath);
       } catch { /* ข้ามถ้าไฟล์ไม่มี */ }
+      const webpPath = getWebpPath(filePath);
+      if (webpPath && webpPath !== filePath) {
+        try {
+          await unlink(webpPath);
+        } catch { /* ข้ามถ้าไฟล์ไม่มี */ }
+      }
     }
     // ลบโฟลเดอร์ของงาน (ถ้าว่างแล้ว)
     try {
       await rmdir(path.join(UPLOAD_DIR, String(eventId)));
     } catch { /* ข้าม */ }
+
+    // ลบไฟล์โปสเตอร์ (ทั้งต้นฉบับและ .webp คู่กัน)
+    if (posterFilename) {
+      const posterFilePath = path.join(UPLOAD_DIR, posterFilename);
+      try {
+        await unlink(posterFilePath);
+      } catch { /* ไฟล์อาจไม่มีอยู่จริง */ }
+      const posterWebpPath = getWebpPath(posterFilePath);
+      if (posterWebpPath && posterWebpPath !== posterFilePath) {
+        try {
+          await unlink(posterWebpPath);
+        } catch { /* ไม่มี .webp คู่กันอยู่ก็ไม่เป็นไร */ }
+      }
+    }
 
     return { success: true };
   } catch (e) {
@@ -325,15 +352,24 @@ export async function updateEventAction(eventId: string, formData: FormData) {
       }
       
       const { unlink } = await import('fs/promises');
+      const oldFilePath = path.join(UPLOAD_DIR, filename);
       try {
-        await unlink(path.join(UPLOAD_DIR, filename)); // ลบรูปเก่า
+        await unlink(oldFilePath); // ลบรูปเก่า
       } catch { /* รูปเก่าอาจจะไม่มีอยู่จริง */ }
+      const oldWebpPath = getWebpPath(oldFilePath);
+      if (oldWebpPath && oldWebpPath !== oldFilePath) {
+        try {
+          await unlink(oldWebpPath); // ลบ .webp คู่กันของรูปเก่า
+        } catch { /* ไม่มี .webp คู่กันอยู่ก็ไม่เป็นไร */ }
+      }
 
       const bytes = await posterFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
       const ext = path.extname(posterFile.name) || '.jpg';
       filename = `${eventId}_poster${ext}`;
-      await writeFile(path.join(UPLOAD_DIR, filename), buffer);
+      const newFilePath = path.join(UPLOAD_DIR, filename);
+      await writeFile(newFilePath, buffer);
+      await generateWebpVariant(newFilePath);
     }
 
     // 3. Update database

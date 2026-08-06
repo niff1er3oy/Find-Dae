@@ -7,6 +7,7 @@ import path from 'path';
 import { checkEventRoleAction } from './event';
 import type { RowDataPacket } from 'mysql2';
 import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
+import { generateWebpVariant, getWebpPath } from '@/lib/webp';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -54,6 +55,7 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
     // 5. เตรียมคำสั่ง SQL แบบ Multiple Insert เพื่อประสิทธิภาพการทำงาน
     let sqlValues = [];
     let bindParams: any[] = [];
+    const uploadedFilenames: string[] = [];
 
     for (let i = 0; i < validFiles.length; i++) {
       const file = validFiles[i];
@@ -69,10 +71,13 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 
       // เขียนไฟล์ลง Local Drive
       await writeFile(filePath, buffer);
+      // สร้างไฟล์ .webp คู่กันไว้สำหรับแสดงผล ต้นฉบับยังอยู่ครบสำหรับดาวน์โหลด
+      await generateWebpVariant(filePath);
 
       // เตรียมข้อมูลชุด Insert ลง DB
       sqlValues.push('(?, ?, ?, NOW())');
       bindParams.push(filename, eventId, user.id);
+      uploadedFilenames.push(filename);
     }
 
     // 6. รัน SQL INSERT ข้อมูลหลายแถวรวดเดียว
@@ -84,7 +89,8 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
     return {
       success: true,
       message: `อัปโหลดจำนวน ${validFiles.length} รูปเรียบร้อยแล้ว!`,
-      folder_path: eventPhotosDir
+      folder_path: eventPhotosDir,
+      uploadedFilenames
     };
 
   } catch (e) {
@@ -96,14 +102,15 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 // แยก Action สำหรับยิงหา AI เพื่อให้หน้าบ้านเอาไว้ทำแอนิเมชัน "รอรีพอร์ต"
 // AI ฝั่ง Python จะรับงานแล้วประมวลผลใน background ทันที ไม่รอจนเสร็จ
 // ให้ฝั่ง front-end poll ความคืบหน้าต่อผ่าน getAIProgressAction แทน
-export async function callAIForReportAction(eventId: string, folder_path: string) {
+export async function callAIForReportAction(eventId: string, folder_path: string, filenames: string[]) {
   try {
     const res = await fetch('http://127.0.0.1:8055/photographers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         event_id: String(eventId),
-        folder_path: folder_path
+        folder_path: folder_path,
+        filenames: filenames
       })
     });
 
@@ -299,13 +306,19 @@ export async function deletePhotoAction(photoId: number, eventId: string) {
     // 3. ลบออกจากฐานข้อมูล
     await pool.query('DELETE FROM photos WHERE id = ?', [photoId]);
 
-    // 3. ลบไฟล์จาก disk
+    // 3. ลบไฟล์จาก disk (ทั้งต้นฉบับและ .webp คู่กัน)
     const filePath = path.join(UPLOAD_DIR_BASE, String(eventId), imagePath);
     try {
       await unlink(filePath);
     } catch (fileErr) {
       // ไฟล์อาจถูกลบไปแล้ว ไม่ต้อง throw
       console.warn('File not found on disk, skipping:', filePath);
+    }
+    const webpPath = getWebpPath(filePath);
+    if (webpPath && webpPath !== filePath) {
+      try {
+        await unlink(webpPath);
+      } catch { /* ไม่มี .webp คู่กันอยู่ก็ไม่เป็นไร */ }
     }
 
     return { success: true };

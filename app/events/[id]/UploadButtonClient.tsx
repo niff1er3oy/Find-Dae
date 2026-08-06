@@ -62,7 +62,7 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
         setProgressText(`กำลังให้ AI สแกนใบหน้าและรอรีพอร์ต...`);
 
         try {
-          const aiRes = await callAIForReportAction(eventId, res.folder_path!);
+          const aiRes = await callAIForReportAction(eventId, res.folder_path!, res.uploadedFilenames!);
           if (aiRes.success) {
             // AI รับงานแล้ว ประมวลผลอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
             let finalMessage = "";
