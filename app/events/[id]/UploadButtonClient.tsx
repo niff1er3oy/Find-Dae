@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { uploadMultiplePhotosAction, callAIForReportAction, getAIProgressAction, checkAiServerAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
@@ -11,15 +11,103 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
   const [isWaitingReport, setIsWaitingReport] = useState(false);
   const [aiReport, setAiReport] = useState("");
   const [progressText, setProgressText] = useState("");
+  const [progressPercent, setProgressPercent] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isSendingFilesRef = useRef(false);
   const router = useRouter();
+
+  // เตือนก่อนปิด/ออกจากหน้า เฉพาะช่วงที่ไฟล์ยังส่งไม่ถึง server ครบ —
+  // หลังจากนั้นงานฝั่ง server/AI ทำงานต่อได้เองแม้ปิดหน้าไปแล้ว ไม่ต้องเตือน
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isSendingFilesRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, []);
+
+  // Resume: ถ้าเข้าหน้านี้มาแล้วมีงาน index ค้างอยู่จากรอบก่อน (เช่นออกจากหน้าไปตอนกำลังรอ AI)
+  // ให้ต่อแสดง progress หรือโชว์ผลลัพธ์ทันทีโดยไม่ต้องอัปโหลดใหม่
+  useEffect(() => {
+    (async () => {
+      const progRes = await getAIProgressAction(eventId);
+      if (!progRes.success || !progRes.progress) return;
+
+      const { status, message, processed, total } = progRes.progress;
+      if (status === "running" || status === "queued") {
+        setIsUploading(true);
+        setIsWaitingReport(true);
+        setProgressText(message || "กำลังประมวลผล...");
+        if (typeof total === "number" && total > 0) {
+          setProgressPercent(Math.min(100, Math.round(((processed ?? 0) / total) * 100)));
+        }
+        pollForCompletion();
+      } else if (status === "done") {
+        setAiReport(message || "ประมวลผลเสร็จสิ้น");
+      }
+      // status === "error" ถือเป็นข้อมูลเก่า ไม่ต้องโชว์ตอนเพิ่งเข้าหน้า
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
+
+  // poll ความคืบหน้าเป็นระยะจนกว่าจะ done/error — เรียกได้ทั้งตอนเพิ่งอัปโหลด และตอน resume
+  const pollForCompletion = async () => {
+    let finalMessage = "";
+    let pollError = "";
+    const maxAttempts = 200; // ~200 * 1.5s = 5 นาที กันวน poll ไม่รู้จบ
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const progRes = await getAIProgressAction(eventId);
+
+      if (!progRes.success || !progRes.progress) {
+        pollError = progRes.error || "ไม่พบสถานะความคืบหน้า";
+        break;
+      }
+
+      const { status, message, processed, total } = progRes.progress;
+      setProgressText(message || "กำลังประมวลผล...");
+      if (typeof total === "number" && total > 0) {
+        setProgressPercent(Math.min(100, Math.round(((processed ?? 0) / total) * 100)));
+      }
+
+      if (status === "done") {
+        finalMessage = message;
+        setProgressPercent(100);
+        break;
+      }
+      if (status === "error") {
+        pollError = message || "เกิดข้อผิดพลาดระหว่างประมวลผล";
+        break;
+      }
+    }
+
+    if (finalMessage) {
+      setProgressText(`AI สแกนเสร็จสิ้น!`);
+      setAiReport(finalMessage);
+    } else if (pollError) {
+      setErrorMsg("อัปโหลดสำเร็จ แต่ " + pollError);
+    } else {
+      setErrorMsg("อัปโหลดสำเร็จ แต่รอผล AI นานเกินไป กรุณาตรวจสอบภายหลัง");
+    }
+
+    setTimeout(() => {
+      setIsUploading(false);
+      setIsWaitingReport(false);
+      router.refresh();
+    }, 3000);
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setErrorMsg("");
+    setProgressPercent(null);
 
     // Check initial constraints before sending to server
     if (files.length > 500) {
@@ -54,7 +142,11 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
 
     try {
       setProgressText(`กำลังวิ่งส่งข้อมูลเข้าเซิร์ฟเวอร์...`);
+      isSendingFilesRef.current = true;
       const res = await uploadMultiplePhotosAction(eventId, formData);
+      isSendingFilesRef.current = false;
+      // เคลียร์ input ทันทีที่ request ถึง server แล้ว (ไม่ต้องรอ AI) เผื่อเลือกไฟล์ชุดเดิมซ้ำในรอบถัดไป
+      if (fileInputRef.current) fileInputRef.current.value = "";
 
       if (res.success) {
         // เมื่ออัปเดตไฟล์ลงเครื่องเสร็จ เปลี่ยนสถานะมารอรีพอร์ต
@@ -65,40 +157,8 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
           const aiRes = await callAIForReportAction(eventId, res.folder_path!, res.uploadedFilenames!);
           if (aiRes.success) {
             // AI รับงานแล้ว ประมวลผลอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
-            let finalMessage = "";
-            let pollError = "";
-            const maxAttempts = 200; // ~200 * 1.5s = 5 นาที กันวน poll ไม่รู้จบ
-
-            for (let attempt = 0; attempt < maxAttempts; attempt++) {
-              await new Promise((resolve) => setTimeout(resolve, 1500));
-              const progRes = await getAIProgressAction(eventId);
-
-              if (!progRes.success || !progRes.progress) {
-                pollError = progRes.error || "ไม่พบสถานะความคืบหน้า";
-                break;
-              }
-
-              const { status, message } = progRes.progress;
-              setProgressText(message || "กำลังประมวลผล...");
-
-              if (status === "done") {
-                finalMessage = message;
-                break;
-              }
-              if (status === "error") {
-                pollError = message || "เกิดข้อผิดพลาดระหว่างประมวลผล";
-                break;
-              }
-            }
-
-            if (finalMessage) {
-              setProgressText(`AI สแกนเสร็จสิ้น!`);
-              setAiReport(finalMessage);
-            } else if (pollError) {
-              setErrorMsg("อัปโหลดสำเร็จ แต่ " + pollError);
-            } else {
-              setErrorMsg("อัปโหลดสำเร็จ แต่รอผล AI นานเกินไป กรุณาตรวจสอบภายหลัง");
-            }
+            await pollForCompletion();
+            return; // pollForCompletion จัดการ isUploading/isWaitingReport/router.refresh ให้แล้ว
           } else {
             setErrorMsg("อัปโหลดสำเร็จ แต่ " + aiRes.error);
           }
@@ -116,6 +176,7 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
         setIsUploading(false);
       }
     } catch (err) {
+      isSendingFilesRef.current = false;
       setErrorMsg("เซิร์ฟเวอร์ไม่ตอบสนอง กรุณาลองใหม่น้า");
       setIsUploading(false);
     }
@@ -166,12 +227,22 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
       )}
 
       {isUploading ? (
-        <div className={`px-6 py-4 sm:px-8 sm:py-5 font-black text-base sm:text-xl rounded-full shadow-inner flex items-center justify-center gap-2 sm:gap-3 w-full cursor-not-allowed ${isWaitingReport ? 'bg-accent-peach text-white shadow-[0_4px_0_#e7a59a] animate-bounce' : 'bg-slate-200 text-slate-600 animate-pulse'}`}>
-          <svg className={`w-6 h-6 sm:w-8 sm:h-8 animate-spin flex-shrink-0 ${isWaitingReport ? 'text-white' : 'text-accent-orange'}`} fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span className="truncate">{progressText}</span>
+        <div className={`px-6 py-4 sm:px-8 sm:py-5 rounded-full shadow-inner flex flex-col items-center justify-center gap-2 w-full cursor-not-allowed ${isWaitingReport ? 'bg-accent-peach text-white shadow-[0_4px_0_#e7a59a]' : 'bg-slate-200 text-slate-600 animate-pulse'}`}>
+          <div className="flex items-center justify-center gap-2 sm:gap-3 w-full font-black text-base sm:text-xl">
+            <svg className={`w-6 h-6 sm:w-8 sm:h-8 animate-spin flex-shrink-0 ${isWaitingReport ? 'text-white' : 'text-accent-orange'}`} fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="truncate">{progressText}</span>
+          </div>
+          {isWaitingReport && progressPercent !== null && (
+            <div className="w-full h-2 bg-white/30 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          )}
         </div>
       ) : (
         <button

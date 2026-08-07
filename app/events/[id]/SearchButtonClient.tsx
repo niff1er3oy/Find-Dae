@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { checkAiServerAction, callAISearchAction, getAISearchProgressAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
@@ -11,12 +11,86 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
   const [isWaitingReport, setIsWaitingReport] = useState(false);
   const [aiReport, setAiReport] = useState("");
   const [progressText, setProgressText] = useState("");
+  const [progressPercent, setProgressPercent] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
+
+  // Resume: ถ้าเข้าหน้านี้มาแล้วมีงานค้นหาค้างอยู่จากรอบก่อน (เช่นออกจากหน้าไปตอนกำลังรอ AI)
+  // ให้ต่อแสดง progress หรือโชว์ผลลัพธ์ทันทีโดยไม่ต้องกดค้นหาใหม่
+  useEffect(() => {
+    (async () => {
+      const progRes = await getAISearchProgressAction(eventId);
+      if (!progRes.success || !progRes.progress) return;
+
+      const { status, message, processed, total } = progRes.progress;
+      if (status === "running" || status === "queued") {
+        setIsSearching(true);
+        setIsWaitingReport(true);
+        setProgressText(message || "กำลังค้นหา...");
+        if (typeof total === "number" && total > 0) {
+          setProgressPercent(Math.min(100, Math.round(((processed ?? 0) / total) * 100)));
+        }
+        pollForCompletion();
+      } else if (status === "done") {
+        setAiReport(message || "ค้นหาเสร็จสิ้น");
+      }
+      // status === "error" ถือเป็นข้อมูลเก่า ไม่ต้องโชว์ตอนเพิ่งเข้าหน้า
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
+
+  // poll ความคืบหน้าเป็นระยะจนกว่าจะ done/error — เรียกได้ทั้งตอนเพิ่งค้นหา และตอน resume
+  const pollForCompletion = async () => {
+    let finalMessage = "";
+    let pollError = "";
+    const maxAttempts = 80; // ~80 * 1.5s = 2 นาที กันวน poll ไม่รู้จบ
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const progRes = await getAISearchProgressAction(eventId);
+
+      if (!progRes.success || !progRes.progress) {
+        pollError = progRes.error || "ไม่พบสถานะความคืบหน้า";
+        break;
+      }
+
+      const { status, message, processed, total } = progRes.progress;
+      setProgressText(message || "กำลังค้นหา...");
+      if (typeof total === "number" && total > 0) {
+        setProgressPercent(Math.min(100, Math.round(((processed ?? 0) / total) * 100)));
+      }
+
+      if (status === "done") {
+        finalMessage = message;
+        setProgressPercent(100);
+        break;
+      }
+      if (status === "error") {
+        pollError = message || "เกิดข้อผิดพลาดระหว่างค้นหา";
+        break;
+      }
+    }
+
+    if (finalMessage) {
+      setProgressText(`AI ค้นหาเสร็จสิ้น!`);
+      setAiReport(finalMessage);
+    } else if (pollError) {
+      setErrorMsg("ข้อผิดพลาดจาก AI: " + pollError);
+    } else {
+      setErrorMsg("รอผล AI นานเกินไป กรุณาลองใหม่ภายหลัง");
+    }
+
+    setTimeout(() => {
+      setIsSearching(false);
+      setIsWaitingReport(false);
+      router.refresh(); // สะกิดให้หน้าเว็บเฟรชข้อมูล ดึงแกลเลอรีรูปล่าสุดมาโชว์
+    }, 3000);
+  };
 
   const handleSearchClick = async () => {
     setErrorMsg("");
     setAiReport("");
+    setProgressPercent(null);
     setIsSearching(true);
     setProgressText(`ตรวจสอบหน้าด่าน AI Server...`);
 
@@ -35,40 +109,8 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
        const aiRes = await callAISearchAction(eventId);
        if (aiRes.success) {
          // AI รับงานแล้ว ค้นหาอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
-         let finalMessage = "";
-         let pollError = "";
-         const maxAttempts = 80; // ~80 * 1.5s = 2 นาที กันวน poll ไม่รู้จบ
-
-         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-           await new Promise((resolve) => setTimeout(resolve, 1500));
-           const progRes = await getAISearchProgressAction(eventId);
-
-           if (!progRes.success || !progRes.progress) {
-             pollError = progRes.error || "ไม่พบสถานะความคืบหน้า";
-             break;
-           }
-
-           const { status, message } = progRes.progress;
-           setProgressText(message || "กำลังค้นหา...");
-
-           if (status === "done") {
-             finalMessage = message;
-             break;
-           }
-           if (status === "error") {
-             pollError = message || "เกิดข้อผิดพลาดระหว่างค้นหา";
-             break;
-           }
-         }
-
-         if (finalMessage) {
-           setProgressText(`AI ค้นหาเสร็จสิ้น!`);
-           setAiReport(finalMessage);
-         } else if (pollError) {
-           setErrorMsg("ข้อผิดพลาดจาก AI: " + pollError);
-         } else {
-           setErrorMsg("รอผล AI นานเกินไป กรุณาลองใหม่ภายหลัง");
-         }
+         await pollForCompletion();
+         return; // pollForCompletion จัดการ isSearching/isWaitingReport/router.refresh ให้แล้ว
        } else {
          setErrorMsg("ข้อผิดพลาดจาก AI: " + aiRes.error);
        }
@@ -79,7 +121,7 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
     setTimeout(() => {
       setIsSearching(false);
       setIsWaitingReport(false);
-      router.refresh(); // สะกิดให้หน้าเว็บเฟรชข้อมูล ดึงแกลเลอรีรูปล่าสุดมาโชว์
+      router.refresh();
     }, 3000);
   };
 
@@ -104,8 +146,8 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
                  {aiReport}
                </pre>
              </div>
-             <button 
-                onClick={() => setAiReport('')} 
+             <button
+                onClick={() => setAiReport('')}
                 className="mt-6 px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-200 rounded-full font-black text-lg transition-all active:scale-95 w-full flex items-center justify-center gap-2"
              >
                 รับทราบและปิดรายงาน
@@ -116,15 +158,25 @@ export default function SearchButtonClient({ eventId }: { eventId: string }) {
       )}
 
       {isSearching ? (
-        <div className={`px-6 py-4 sm:px-8 sm:py-5 font-black text-base sm:text-xl rounded-full shadow-inner flex items-center justify-center gap-2 sm:gap-3 w-full cursor-not-allowed ${isWaitingReport ? 'bg-accent-peach text-white shadow-[0_4px_0_#e7a59a] animate-bounce' : 'bg-slate-200 text-slate-600 animate-pulse'}`}>
-          <svg className={`w-6 h-6 sm:w-8 sm:h-8 animate-spin flex-shrink-0 ${isWaitingReport ? 'text-white' : 'text-accent-orange'}`} fill="none" viewBox="0 0 24 24">
-             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span className="truncate">{progressText}</span>
+        <div className={`px-6 py-4 sm:px-8 sm:py-5 rounded-full shadow-inner flex flex-col items-center justify-center gap-2 w-full cursor-not-allowed ${isWaitingReport ? 'bg-accent-peach text-white shadow-[0_4px_0_#e7a59a]' : 'bg-slate-200 text-slate-600 animate-pulse'}`}>
+          <div className="flex items-center justify-center gap-2 sm:gap-3 w-full font-black text-base sm:text-xl">
+            <svg className={`w-6 h-6 sm:w-8 sm:h-8 animate-spin flex-shrink-0 ${isWaitingReport ? 'text-white' : 'text-accent-orange'}`} fill="none" viewBox="0 0 24 24">
+               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="truncate">{progressText}</span>
+          </div>
+          {isWaitingReport && progressPercent !== null && (
+            <div className="w-full h-2 bg-white/30 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          )}
         </div>
       ) : (
-        <button 
+        <button
           onClick={handleSearchClick}
           className="btn-primary btn-pink w-full flex items-center justify-center gap-3"
         >
