@@ -200,7 +200,7 @@ export default function PhotoGalleryClient({
             onClick={(e) => e.stopPropagation()}
           >
             <a
-              href={selectedPhoto.url}
+              href={`${selectedPhoto.url}?original=1`}
               download
               className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-xl transition-colors cursor-pointer border border-white/20 text-sm sm:text-base"
             >
