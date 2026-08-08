@@ -46,7 +46,7 @@ Find Dae แก้ปัญหา "ถ่ายรูปงานเยอะม
 | Language            | TypeScript 5                        |
 | Database            | MySQL 8 via mysql2                  |
 | Authentication      | JWT (jose) + bcryptjs               |
-| File Compression    | 7-Zip (7zip-bin + node-7z)          |
+| File Compression    | archiver (streaming ZIP)            |
 | AI Face Recognition | Python Server (รันแยก บน port 8055) |
 
 ---

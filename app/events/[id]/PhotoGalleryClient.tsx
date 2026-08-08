@@ -78,7 +78,7 @@ export default function PhotoGalleryClient({
       const blob = await res.blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `event_${eventId}_photos.7z`;
+      a.download = `event_${eventId}_photos.zip`;
       a.click();
       URL.revokeObjectURL(a.href);
     } catch {
