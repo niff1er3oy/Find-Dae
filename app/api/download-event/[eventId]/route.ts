@@ -5,6 +5,7 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import path from 'path';
 import { existsSync } from 'fs';
+import { stat } from 'fs/promises';
 import { Readable } from 'stream';
 import { ZipArchive } from 'archiver';
 import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
@@ -58,6 +59,12 @@ export async function POST(
     return NextResponse.json({ error: 'ไม่พบไฟล์บน disk' }, { status: 404 });
   }
 
+  // รวมขนาดไฟล์ต้นฉบับไว้ส่งเป็น header แยกให้ client ใช้คำนวณ % ความคืบหน้าเท่านั้น — ไม่ใช้เป็น
+  // Content-Length จริงของ response เพราะ zip มี header/overhead เพิ่มจากขนาดไฟล์ดิบเล็กน้อย ถ้า
+  // Content-Length ไม่ตรงกับ byte ที่ส่งจริงเป๊ะๆ browser อาจตัดจบการดาวโหลดก่อนเสร็จหรือค้างรอได้
+  const fileStats = await Promise.all(filePaths.map(f => stat(f)));
+  const totalSize = fileStats.reduce((sum, s) => sum + s.size, 0);
+
   // stream ไฟล์ zip ตรงเข้า response ทีละไฟล์ ไม่สร้าง archive เต็มไฟล์บนดิสก์ก่อนแบบที่เคยทำ
   // ด้วย 7-Zip subprocess — วิธีนั้นเจอปัญหามาหมดทั้ง command line length limit, listfile charset
   // ไม่ตรงกันข้าม OS, พื้นที่ tmpfs ไม่พอ, และที่สำคัญคือ Cloudflare 524 เพราะต้องรอสร้าง archive
@@ -77,6 +84,7 @@ export async function POST(
     headers: {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="event_${eventId}_photos.zip"`,
+      'X-Total-Size': String(totalSize),
     },
   });
 }

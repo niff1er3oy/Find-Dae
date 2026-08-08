@@ -26,6 +26,7 @@ export default function PhotoGalleryClient({
   const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; id: number } | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -64,6 +65,7 @@ export default function PhotoGalleryClient({
 
   const handleDownloadAll = async () => {
     setIsDownloadingAll(true);
+    setDownloadProgress(null); // null = "\u0e01\u0e33\u0e25\u0e31\u0e07\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e44\u0e1f\u0e25\u0e4c..." (\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e23\u0e39\u0e49\u0e02\u0e19\u0e32\u0e14\u0e23\u0e27\u0e21/\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e40\u0e23\u0e34\u0e48\u0e21\u0e23\u0e31\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25)
     try {
       const res = await fetch(`/api/download-event/${eventId}`, {
         method: 'POST',
@@ -75,7 +77,30 @@ export default function PhotoGalleryClient({
         alert(err.error || '\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08');
         return;
       }
-      const blob = await res.blob();
+
+      const totalSize = Number(res.headers.get('X-Total-Size')) || 0;
+      const reader = res.body?.getReader();
+
+      let blob: Blob;
+      if (!reader) {
+        // \u0e40\u0e1a\u0e23\u0e32\u0e27\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c\u0e40\u0e01\u0e48\u0e32\u0e17\u0e35\u0e48\u0e44\u0e21\u0e48\u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a streaming reader \u2014 \u0e42\u0e2b\u0e25\u0e14\u0e17\u0e31\u0e49\u0e07\u0e01\u0e49\u0e2d\u0e19\u0e41\u0e1a\u0e1a\u0e40\u0e14\u0e34\u0e21 \u0e44\u0e21\u0e48\u0e21\u0e35 progress \u0e23\u0e30\u0e2b\u0e27\u0e48\u0e32\u0e07\u0e17\u0e32\u0e07
+        blob = await res.blob();
+      } else {
+        const chunks: BlobPart[] = [];
+        let received = 0;
+        setDownloadProgress(0);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          received += value.length;
+          // \u0e01\u0e31\u0e19\u0e44\u0e21\u0e48\u0e43\u0e2b\u0e49\u0e02\u0e36\u0e49\u0e19 100% \u0e15\u0e31\u0e49\u0e07\u0e41\u0e15\u0e48\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e08\u0e23\u0e34\u0e07 (zip \u0e21\u0e35 overhead \u0e40\u0e01\u0e34\u0e19\u0e02\u0e19\u0e32\u0e14\u0e44\u0e1f\u0e25\u0e4c\u0e14\u0e34\u0e1a\u0e40\u0e25\u0e47\u0e01\u0e19\u0e49\u0e2d\u0e22)
+          if (totalSize > 0) setDownloadProgress(Math.min(99, Math.round((received / totalSize) * 100)));
+        }
+        setDownloadProgress(100);
+        blob = new Blob(chunks, { type: 'application/zip' });
+      }
+
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `event_${eventId}_photos.zip`;
@@ -85,6 +110,7 @@ export default function PhotoGalleryClient({
       alert('\u0e40\u0e01\u0e34\u0e14\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e43\u0e19\u0e01\u0e32\u0e23\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14');
     } finally {
       setIsDownloadingAll(false);
+      setDownloadProgress(null);
     }
   };
 
@@ -95,26 +121,35 @@ export default function PhotoGalleryClient({
           <Camera className="w-8 h-8 text-accent-pink" /> {title}
         </h2>
         {photos.length > 0 && (
-          <button
-            onClick={handleDownloadAll}
-            disabled={isDownloadingAll}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-slate-200 hover:border-accent-orange hover:text-accent-orange text-slate-600 font-bold rounded-full shadow-sm transition-all active:scale-95 disabled:opacity-50 text-sm"
-          >
-            {isDownloadingAll ? (
-              <>
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          isDownloadingAll ? (
+            <div className="flex flex-col gap-2 px-5 py-2.5 bg-white border-2 border-slate-200 rounded-2xl shadow-sm text-sm min-w-[200px]">
+              <div className="flex items-center gap-2 text-slate-600 font-bold">
+                <svg className="w-4 h-4 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                กำลังดาวโหลด...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                ดาวโหลดทั้งหมด ({photos.length})
-              </>
-            )}
-          </button>
+                <span className="truncate">
+                  {downloadProgress === null ? 'กำลังเตรียมไฟล์...' : `กำลังดาวโหลด... ${downloadProgress}%`}
+                </span>
+              </div>
+              {downloadProgress !== null && (
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-accent-orange rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${downloadProgress}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={handleDownloadAll}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-slate-200 hover:border-accent-orange hover:text-accent-orange text-slate-600 font-bold rounded-full shadow-sm transition-all active:scale-95 text-sm"
+            >
+              <Download className="w-4 h-4" />
+              ดาวโหลดทั้งหมด ({photos.length})
+            </button>
+          )
         )}
       </div>
 
