@@ -98,13 +98,16 @@ export async function POST(
     // listfile ไม่ตรงกันระหว่าง 7-Zip บน Windows (ตอน dev) กับ p7zip บน Linux (เซิร์ฟเวอร์จริง)
     // แก้ด้วยการแบ่งไฟล์เป็นชุดย่อยแล้วเรียก Seven.add ทับไปที่ archive เดิมหลายรอบแทน —
     // แต่ละรอบมี argument น้อยพอไม่มีทางชน limit ของ OS ไม่ว่าทั้งหมดจะมีกี่พันไฟล์ก็ตาม
+    // เก็บแบบ store (ไม่บีบอัด) แทน LZMA2 — รูปเป็น .jpg/.webp ที่บีบอัดมาแล้ว บีบซ้ำด้วย LZMA2
+    // แทบไม่ช่วยลดขนาดเลยแต่กิน CPU มหาศาล จนสร้าง archive ของงานที่มีรูปเยอะไม่ทันภายใน
+    // เวลาที่ Cloudflare รอ (เจอ 524 "origin took too long to respond" ตอนงานมี 1700 รูป)
     const CHUNK_SIZE = 200;
     for (let i = 0; i < filePaths.length; i += CHUNK_SIZE) {
       const chunk = filePaths.slice(i, i + CHUNK_SIZE);
       await new Promise<void>((resolve, reject) => {
         const stream = Seven.add(archivePath, chunk, {
           $bin: sevenBinPath,
-          method: ['0=LZMA2', 'x=5'],
+          method: ['x=0'],
         });
         stream.on('end', resolve);
         stream.on('error', reject);
