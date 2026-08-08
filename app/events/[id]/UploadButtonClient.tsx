@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { uploadMultiplePhotosAction, callAIForReportAction, getAIProgressAction, checkAiServerAction } from "@/app/actions/photo";
+import { callAIForReportAction, getAIProgressAction, checkAiServerAction } from "@/app/actions/photo";
 import { useRouter } from "next/navigation";
 import { Camera, Bot, AlertTriangle } from "lucide-react";
 
@@ -185,13 +185,17 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
         batchFormData.append("photos", file);
       }
 
+      // ใช้ fetch ไปยัง Route Handler ตรงๆ แทนการเรียก Server Action — ทำให้ AbortController
+      // ยกเลิก connection จริงได้เมื่อ timeout (ของเดิมแค่เลิกรอฝั่ง client แต่ server ยังทำต่อ)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), BATCH_TIMEOUT_MS);
       try {
-        const res = await Promise.race([
-          uploadMultiplePhotosAction(eventId, batchFormData),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('อัปโหลดชุดนี้นานเกินไป')), BATCH_TIMEOUT_MS)
-          ),
-        ]);
+        const httpRes = await fetch(`/api/events/${eventId}/photos`, {
+          method: "POST",
+          body: batchFormData,
+          signal: controller.signal,
+        });
+        const res = await httpRes.json();
         if (res.success) {
           allUploadedFilenames.push(...(res.uploadedFilenames || []));
           folderPath = res.folder_path;
@@ -202,6 +206,8 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
       } catch (err) {
         uploadError = "มีรูปที่อัปโหลดไม่สำเร็จภายในเวลาที่กำหนด (อาจเป็นรูปที่ยังไม่ได้ดาวน์โหลดลงเครื่อง เช่น รูป sync จาก Google Photos — ลองเปิดรูปในแอป Gallery ก่อนแล้วอัปโหลดใหม่)";
         failedBatchCount++;
+      } finally {
+        clearTimeout(timeoutId);
       }
       // ไม่ break — ให้ลองชุดถัดไปต่อ เผื่อปัญหาอยู่แค่บางไฟล์ ไม่ใช่ทั้งหมด
     }
