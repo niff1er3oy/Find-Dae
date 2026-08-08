@@ -154,8 +154,9 @@ export async function deleteEventAction(eventId: string) {
     );
     const posterFilename = posterRows[0]?.poster as string | undefined;
 
-    // 2. ลบ child rows (face) → photos → event ตามลำดับ FK
+    // 2. ลบ child rows (face, event_access) → photos → event ตามลำดับ FK
     await pool.query('DELETE FROM event_collaborators WHERE event_id = ?', [eventId]);
+    await pool.query('DELETE FROM event_access WHERE event_id = ?', [eventId]);
     await pool.query(
       'DELETE FROM face WHERE photos_id IN (SELECT id FROM photos WHERE event_id = ?)',
       [eventId]
