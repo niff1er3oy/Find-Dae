@@ -89,15 +89,17 @@ export async function POST(
     // (รวมความยาวเกิน command line limit ของ OS) ใช้ 7-Zip @listfile แทน
     // เพื่อให้ argument บน command line มีแค่ path เดียวไม่ว่าจะมีกี่ไฟล์ก็ตาม
     const listFilePath = path.join(tempDir, 'filelist.txt');
-    // ขึ้นต้นด้วย UTF-16LE BOM เพื่อให้ 7-Zip อ่าน listfile เป็น unicode
-    // (เผื่อ path มีอักขระที่ไม่ใช่ ASCII)
-    await writeFile(listFilePath, '\uFEFF' + filePaths.join('\r\n'), 'utf16le');
+    // เขียนเป็น UTF-8 ธรรมดา (ไม่ใส่ BOM) แล้วบอก 7-Zip ตรงๆ ด้วย -scsUTF-8 แทนการพึ่ง
+    // auto-detect จาก BOM — p7zip บน Linux (เซิร์ฟเวอร์จริง) ไม่ auto-detect UTF-16LE BOM
+    // เหมือน 7-Zip บน Windows ทำให้ error "Incorrect item in listfile"
+    await writeFile(listFilePath, filePaths.join('\n'), 'utf8');
 
     // สร้างไฟล์ 7z
     await new Promise<void>((resolve, reject) => {
       const stream = Seven.add(archivePath, [`@${listFilePath}`], {
         $bin: sevenBinPath,
         method: ['0=LZMA2', 'x=5'],
+        $raw: ['-scsUTF-8'],
       });
       stream.on('end', resolve);
       stream.on('error', reject);
