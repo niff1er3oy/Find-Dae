@@ -167,33 +167,45 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
     let allUploadedFilenames: string[] = [];
     let folderPath: string | undefined;
     let uploadError = "";
+    let failedBatchCount = 0;
+
+    // กันชุดไหนค้างตลอดไป (เช่น มีรูปที่เป็นไฟล์คลาวด์ยังไม่ได้ดาวน์โหลดในเครื่อง — มือถือ
+    // Android บางรุ่นจะค้างรอ OS ดาวน์โหลดไฟล์แบบไม่มี timeout เลย) — ตัด ๆ ไปแล้วลองชุดถัดไปต่อ
+    // แทนที่จะค้างทั้งหมด (Cloudflare เองก็ตัดการเชื่อมต่อที่ราว ~100 วิอยู่แล้ว ตั้งไว้ต่ำกว่านั้นหน่อย)
+    const BATCH_TIMEOUT_MS = 90 * 1000;
 
     isSendingFilesRef.current = true;
-    try {
-      for (let i = 0; i < batches.length; i++) {
-        const batch = batches[i];
-        setProgressText(`กำลังอัปโหลดชุดที่ ${i + 1}/${batches.length} (${batch.length} รูป)...`);
-        setProgressPercent(Math.round((i / batches.length) * 100));
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      setProgressText(`กำลังอัปโหลดชุดที่ ${i + 1}/${batches.length} (${batch.length} รูป)...`);
+      setProgressPercent(Math.round((i / batches.length) * 100));
 
-        const batchFormData = new FormData();
-        for (const file of batch) {
-          batchFormData.append("photos", file);
-        }
+      const batchFormData = new FormData();
+      for (const file of batch) {
+        batchFormData.append("photos", file);
+      }
 
-        const res = await uploadMultiplePhotosAction(eventId, batchFormData);
+      try {
+        const res = await Promise.race([
+          uploadMultiplePhotosAction(eventId, batchFormData),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('อัปโหลดชุดนี้นานเกินไป')), BATCH_TIMEOUT_MS)
+          ),
+        ]);
         if (res.success) {
           allUploadedFilenames.push(...(res.uploadedFilenames || []));
           folderPath = res.folder_path;
         } else {
           uploadError = res.error || "เกิดข้อผิดพลาดในการอัปโหลด";
-          break;
+          failedBatchCount++;
         }
+      } catch (err) {
+        uploadError = "มีรูปที่อัปโหลดไม่สำเร็จภายในเวลาที่กำหนด (อาจเป็นรูปที่ยังไม่ได้ดาวน์โหลดลงเครื่อง เช่น รูป sync จาก Google Photos — ลองเปิดรูปในแอป Gallery ก่อนแล้วอัปโหลดใหม่)";
+        failedBatchCount++;
       }
-    } catch (err) {
-      uploadError = "เซิร์ฟเวอร์ไม่ตอบสนอง กรุณาลองใหม่น้า";
-    } finally {
-      isSendingFilesRef.current = false;
+      // ไม่ break — ให้ลองชุดถัดไปต่อ เผื่อปัญหาอยู่แค่บางไฟล์ ไม่ใช่ทั้งหมด
     }
+    isSendingFilesRef.current = false;
 
     setProgressPercent(100);
     // เคลียร์ input ทันทีที่ request ถึง server แล้ว (ไม่ต้องรอ AI) เผื่อเลือกไฟล์ชุดเดิมซ้ำในรอบถัดไป
@@ -206,9 +218,13 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
       return;
     }
 
+    const partialFailureNote = failedBatchCount > 0
+      ? `มี ${failedBatchCount} ชุด (${uploadError}) ไม่สำเร็จ`
+      : "";
+
     setProgressText(
-      uploadError
-        ? `อัปโหลดได้ ${allUploadedFilenames.length} รูป (มีบางส่วนไม่สำเร็จ) กำลังให้ AI สแกนใบหน้า...`
+      partialFailureNote
+        ? `อัปโหลดได้ ${allUploadedFilenames.length} รูป (${partialFailureNote}) กำลังให้ AI สแกนใบหน้า...`
         : `กำลังให้ AI สแกนใบหน้าและรอรีพอร์ต...`
     );
 
@@ -217,12 +233,12 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
       if (aiRes.success) {
         // AI รับงานแล้ว ประมวลผลอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
         await pollForCompletion();
-        if (uploadError) {
-          setErrorMsg(`มีบางรูปอัปโหลดไม่สำเร็จ: ${uploadError} (กรุณาอัปโหลดรูปที่เหลือใหม่)`);
+        if (partialFailureNote) {
+          setErrorMsg(`${partialFailureNote} (กรุณาอัปโหลดรูปที่เหลือใหม่)`);
         }
         return; // pollForCompletion จัดการ isUploading/isWaitingReport/router.refresh ให้แล้ว
       } else {
-        setErrorMsg((uploadError ? `อัปโหลดได้บางส่วน (${uploadError}) และ ` : "อัปโหลดสำเร็จ แต่ ") + aiRes.error);
+        setErrorMsg((partialFailureNote ? `อัปโหลดได้บางส่วน (${partialFailureNote}) และ ` : "อัปโหลดสำเร็จ แต่ ") + aiRes.error);
       }
     } catch (e) {
       setErrorMsg("การสแกนใบหน้าเชื่อมต่อไม่ได้ แต่ได้ส่งรูปลงงานแล้ว");
