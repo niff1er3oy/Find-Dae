@@ -3,7 +3,7 @@ import { getUserAction } from '@/app/actions/auth';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import path from 'path';
-import { mkdir, rm, stat, writeFile } from 'fs/promises';
+import { mkdir, rm, stat } from 'fs/promises';
 import { existsSync, createReadStream, chmodSync } from 'fs';
 import { Readable } from 'stream';
 import { tmpdir } from 'os';
@@ -85,25 +85,23 @@ export async function POST(
       return NextResponse.json({ error: 'ไม่พบไฟล์บน disk' }, { status: 404 });
     }
 
-    // ส่ง path ทีละไฟล์เป็น argument ของ spawn ตรงๆ จะพังเมื่อจำนวนไฟล์เยอะ
-    // (รวมความยาวเกิน command line limit ของ OS) ใช้ 7-Zip @listfile แทน
-    // เพื่อให้ argument บน command line มีแค่ path เดียวไม่ว่าจะมีกี่ไฟล์ก็ตาม
-    const listFilePath = path.join(tempDir, 'filelist.txt');
-    // เขียนเป็น UTF-8 ธรรมดา (ไม่ใส่ BOM) แล้วบอก 7-Zip ตรงๆ ด้วย -scsUTF-8 แทนการพึ่ง
-    // auto-detect จาก BOM — p7zip บน Linux (เซิร์ฟเวอร์จริง) ไม่ auto-detect UTF-16LE BOM
-    // เหมือน 7-Zip บน Windows ทำให้ error "Incorrect item in listfile"
-    await writeFile(listFilePath, filePaths.join('\n'), 'utf8');
-
-    // สร้างไฟล์ 7z
-    await new Promise<void>((resolve, reject) => {
-      const stream = Seven.add(archivePath, [`@${listFilePath}`], {
-        $bin: sevenBinPath,
-        method: ['0=LZMA2', 'x=5'],
-        $raw: ['-scsUTF-8'],
+    // ส่ง path ทีละไฟล์เป็น argument ของ spawn ตรงๆ จะพังเมื่อจำนวนไฟล์เยอะ (รวมความยาวเกิน
+    // command line limit ของ OS) เคยลองใช้ 7-Zip @listfile แทนแล้ว แต่ชนปัญหา charset ของ
+    // listfile ไม่ตรงกันระหว่าง 7-Zip บน Windows (ตอน dev) กับ p7zip บน Linux (เซิร์ฟเวอร์จริง)
+    // แก้ด้วยการแบ่งไฟล์เป็นชุดย่อยแล้วเรียก Seven.add ทับไปที่ archive เดิมหลายรอบแทน —
+    // แต่ละรอบมี argument น้อยพอไม่มีทางชน limit ของ OS ไม่ว่าทั้งหมดจะมีกี่พันไฟล์ก็ตาม
+    const CHUNK_SIZE = 200;
+    for (let i = 0; i < filePaths.length; i += CHUNK_SIZE) {
+      const chunk = filePaths.slice(i, i + CHUNK_SIZE);
+      await new Promise<void>((resolve, reject) => {
+        const stream = Seven.add(archivePath, chunk, {
+          $bin: sevenBinPath,
+          method: ['0=LZMA2', 'x=5'],
+        });
+        stream.on('end', resolve);
+        stream.on('error', reject);
       });
-      stream.on('end', resolve);
-      stream.on('error', reject);
-    });
+    }
 
     // สตรีมไฟล์แทนการอ่านทั้งไฟล์เข้า Buffer — fs.readFile จำกัดขนาดไว้ที่ 2 GiB
     // ซึ่งไฟล์ .7z ของงานที่มีรูปเยอะๆ เกินได้ง่าย
