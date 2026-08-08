@@ -3,7 +3,7 @@ import { getUserAction } from '@/app/actions/auth';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import path from 'path';
-import { mkdir, rm, stat } from 'fs/promises';
+import { mkdir, rm, stat, writeFile } from 'fs/promises';
 import { existsSync, createReadStream, chmodSync } from 'fs';
 import { Readable } from 'stream';
 import { tmpdir } from 'os';
@@ -72,9 +72,17 @@ export async function GET(
       return NextResponse.json({ error: 'ไม่พบไฟล์บน disk' }, { status: 404 });
     }
 
+    // ส่ง path ทีละไฟล์เป็น argument ของ spawn ตรงๆ จะพังเมื่อจำนวนไฟล์เยอะ
+    // (รวมความยาวเกิน command line limit ของ OS) ใช้ 7-Zip @listfile แทน
+    // เพื่อให้ argument บน command line มีแค่ path เดียวไม่ว่าจะมีกี่ไฟล์ก็ตาม
+    const listFilePath = path.join(tempDir, 'filelist.txt');
+    // ขึ้นต้นด้วย UTF-16LE BOM เพื่อให้ 7-Zip อ่าน listfile เป็น unicode
+    // (เผื่อ path มีอักขระที่ไม่ใช่ ASCII)
+    await writeFile(listFilePath, '\uFEFF' + filePaths.join('\r\n'), 'utf16le');
+
     // สร้างไฟล์ 7z
     await new Promise<void>((resolve, reject) => {
-      const stream = Seven.add(archivePath, filePaths, {
+      const stream = Seven.add(archivePath, [`@${listFilePath}`], {
         $bin: sevenBinPath,
         method: ['0=LZMA2', 'x=5'],
       });
