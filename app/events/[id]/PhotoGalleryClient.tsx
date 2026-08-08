@@ -65,7 +65,11 @@ export default function PhotoGalleryClient({
   const handleDownloadAll = async () => {
     setIsDownloadingAll(true);
     try {
-      const res = await fetch(`/api/download-event/${eventId}`);
+      const res = await fetch(`/api/download-event/${eventId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoIds: photos.map(p => p.id) }),
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         alert(err.error || '\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08');

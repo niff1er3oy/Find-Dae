@@ -35,7 +35,7 @@ if (process.platform !== 'win32' && existsSync(sevenBinPath)) {
   }
 }
 
-export async function GET(
+export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
@@ -47,10 +47,23 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // ดึงรายชื่อไฟล์รูปในงานนี้
+  // รับรายชื่อ photo id ที่จะดาวโหลด (ตรงกับรูปที่ gallery ฝั่งนั้นแสดงอยู่จริง เช่น
+  // เฉพาะ "รูปที่คุณอยู่ในระบบ" หรือ "รูปอื่นๆ") ส่งผ่าน POST body แทน query string
+  // เพราะจำนวนรูปอาจมีเป็นพัน ถ้าใส่ใน URL จะชนขีดจำกัดความยาว URL ของ browser/proxy
+  let photoIds: unknown;
+  try {
+    ({ photoIds } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
+  }
+  if (!Array.isArray(photoIds) || photoIds.length === 0 || !photoIds.every(id => Number.isInteger(id))) {
+    return NextResponse.json({ error: 'photoIds ต้องเป็น array ของ id' }, { status: 400 });
+  }
+
+  // ดึงรายชื่อไฟล์รูปในงานนี้ — กรองด้วย event_id เสมอ กัน id ของงานอื่นหลุดเข้ามาผ่าน photoIds
   const [photos] = await pool.query<RowDataPacket[]>(
-    'SELECT image_path FROM photos WHERE event_id = ? ORDER BY id ASC',
-    [eventId]
+    'SELECT image_path FROM photos WHERE event_id = ? AND id IN (?) ORDER BY id ASC',
+    [eventId, photoIds]
   );
 
   if (!photos.length) {
