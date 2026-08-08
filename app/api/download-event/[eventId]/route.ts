@@ -3,8 +3,9 @@ import { getUserAction } from '@/app/actions/auth';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import path from 'path';
-import { mkdir, rm } from 'fs/promises';
+import { mkdir, rm, stat } from 'fs/promises';
 import { existsSync, createReadStream, chmodSync } from 'fs';
+import { Readable } from 'stream';
 import { tmpdir } from 'os';
 import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -81,18 +82,20 @@ export async function GET(
       stream.on('error', reject);
     });
 
-    // อ่านไฟล์และส่งกลับ
-    const fileBuffer = await import('fs/promises').then(fs => fs.readFile(archivePath));
+    // สตรีมไฟล์แทนการอ่านทั้งไฟล์เข้า Buffer — fs.readFile จำกัดขนาดไว้ที่ 2 GiB
+    // ซึ่งไฟล์ .7z ของงานที่มีรูปเยอะๆ เกินได้ง่าย
+    const { size } = await stat(archivePath);
+    const nodeStream = createReadStream(archivePath);
+    nodeStream.on('close', () => {
+      rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    });
 
-    // ลบ temp dir หลังส่งข้อมูล
-    rm(tempDir, { recursive: true, force: true }).catch(() => {});
-
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(Readable.toWeb(nodeStream) as ReadableStream, {
       status: 200,
       headers: {
         'Content-Type': 'application/x-7z-compressed',
         'Content-Disposition': `attachment; filename="event_${eventId}_photos.7z"`,
-        'Content-Length': String(fileBuffer.length),
+        'Content-Length': String(size),
       },
     });
   } catch (e) {

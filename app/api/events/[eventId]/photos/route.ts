@@ -9,7 +9,15 @@ export async function POST(
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   const { eventId } = await params;
-  const formData = await request.formData();
+
+  let formData;
+  try {
+    formData = await request.formData();
+  } catch {
+    // client ยกเลิก request กลางทาง (เช่น timeout ผ่าน AbortController) ทำให้ multipart body ขาดตอน
+    return NextResponse.json({ success: false, error: 'Upload was interrupted' }, { status: 400 });
+  }
+
   const result = await uploadMultiplePhotosAction(eventId, formData);
   return NextResponse.json(result, { status: result.success ? 200 : 400 });
 }
