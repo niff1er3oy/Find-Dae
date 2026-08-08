@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserAction } from '@/app/actions/auth';
+import { checkEventAccessAction } from '@/app/actions/event';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import path from 'path';
 import { mkdir, rm, stat } from 'fs/promises';
 import { existsSync, createReadStream, chmodSync } from 'fs';
 import { Readable } from 'stream';
-import { tmpdir } from 'os';
-import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE } from '@/lib/uploadDirs';
+import { EVENTS_UPLOAD_DIR as UPLOAD_DIR_BASE, DOWNLOAD_TMP_DIR } from '@/lib/uploadDirs';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Seven = require('node-7z');
 
@@ -41,10 +41,16 @@ export async function POST(
 ) {
   const { eventId } = await params;
 
-  // ตรวจสอบสิทธิ์
+  // ตรวจสอบสิทธิ์ — ต้องล็อกอินและมีสิทธิ์เข้าถึงงานนี้จริง (เช็กเดียวกับที่หน้า event ใช้กรอง
+  // ก่อน render ทั้งรหัสผ่านงาน / event_access / role ตากล้อง) กัน user ที่ล็อกอินอยู่แต่ไม่มี
+  // สิทธิ์เข้างานนี้ ยิง photoIds เดามาดาวโหลดรูปงานอื่นตรงๆ ผ่าน API นี้ได้
   const user = await getUserAction();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const hasAccess = await checkEventAccessAction(eventId);
+  if (!hasAccess) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
   // รับรายชื่อ photo id ที่จะดาวโหลด (ตรงกับรูปที่ gallery ฝั่งนั้นแสดงอยู่จริง เช่น
@@ -70,8 +76,10 @@ export async function POST(
     return NextResponse.json({ error: 'ไม่มีรูปในงานนี้' }, { status: 404 });
   }
 
-  // สร้าง temp dir สำหรับเก็บ output
-  const tempDir = path.join(tmpdir(), `find_dae_${eventId}_${Date.now()}`);
+  // สร้าง temp dir สำหรับเก็บ output — ใช้ path บนดิสก์จริงข้างๆ โฟลเดอร์รูป แทน os.tmpdir()
+  // เพราะ os.tmpdir() บนเซิร์ฟเวอร์จริงเป็น tmpfs (RAM-backed) มีที่ว่างจำกัดแค่ไม่กี่ GB
+  // ไม่พอสำหรับ archive ของงานที่มีรูปเยอะๆ (เจอ error "System ERROR: E_FAIL" ตอนพื้นที่ไม่พอ)
+  const tempDir = path.join(DOWNLOAD_TMP_DIR, `find_dae_${eventId}_${Date.now()}`);
   await mkdir(tempDir, { recursive: true });
   const archivePath = path.join(tempDir, `event_${eventId}.7z`);
 
