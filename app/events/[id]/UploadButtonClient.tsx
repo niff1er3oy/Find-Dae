@@ -6,6 +6,27 @@ import { uploadMultiplePhotosAction, callAIForReportAction, getAIProgressAction,
 import { useRouter } from "next/navigation";
 import { Camera, Bot, AlertTriangle } from "lucide-react";
 
+// แบ่งไฟล์เป็นชุดๆ ตามขนาดรวม (และจำนวนไฟล์) ไม่ให้ชุดไหนใหญ่/นานเกินจน
+// connection ผ่าน Cloudflare Tunnel โดนตัดกลางทาง
+function chunkFilesForUpload(files: File[], maxBytesPerChunk: number, maxFilesPerChunk: number): File[][] {
+  const chunks: File[][] = [];
+  let current: File[] = [];
+  let currentBytes = 0;
+
+  for (const file of files) {
+    const wouldExceed = current.length > 0 && (currentBytes + file.size > maxBytesPerChunk || current.length >= maxFilesPerChunk);
+    if (wouldExceed) {
+      chunks.push(current);
+      current = [];
+      currentBytes = 0;
+    }
+    current.push(file);
+    currentBytes += file.size;
+  }
+  if (current.length > 0) chunks.push(current);
+  return chunks;
+}
+
 export default function UploadButtonClient({ eventId }: { eventId: string }) {
   const [isUploading, setIsUploading] = useState(false);
   const [isWaitingReport, setIsWaitingReport] = useState(false);
@@ -135,54 +156,83 @@ export default function UploadButtonClient({ eventId }: { eventId: string }) {
       return;
     }
 
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("photos", files[i]);
-    }
+    // แบ่งส่งเป็นชุดย่อยแทนการยิงทุกรูปในคำขอเดียว — กัน timeout จาก Cloudflare Tunnel
+    // (edge จะตัดการเชื่อมต่อที่ค้างนานเกิน ~100 วิ ซึ่งเน็ตอัปโหลดบ้านช้ากว่าดาวน์โหลดมาก
+    // ยิ่งไฟล์รวมกันใหญ่/เยอะยิ่งเสี่ยงโดนตัดกลางทาง)
+    const MAX_BATCH_BYTES = 8 * 1024 * 1024;
+    const MAX_BATCH_FILES = 20;
+    const batches = chunkFilesForUpload(Array.from(files), MAX_BATCH_BYTES, MAX_BATCH_FILES);
 
+    setIsWaitingReport(true); // ตั้งแต่เริ่มส่งไฟล์เลย ให้ progress bar โชว์ตลอดทั้งสองช่วง
+    let allUploadedFilenames: string[] = [];
+    let folderPath: string | undefined;
+    let uploadError = "";
+
+    isSendingFilesRef.current = true;
     try {
-      setProgressText(`กำลังวิ่งส่งข้อมูลเข้าเซิร์ฟเวอร์...`);
-      isSendingFilesRef.current = true;
-      const res = await uploadMultiplePhotosAction(eventId, formData);
-      isSendingFilesRef.current = false;
-      // เคลียร์ input ทันทีที่ request ถึง server แล้ว (ไม่ต้องรอ AI) เผื่อเลือกไฟล์ชุดเดิมซ้ำในรอบถัดไป
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        setProgressText(`กำลังอัปโหลดชุดที่ ${i + 1}/${batches.length} (${batch.length} รูป)...`);
+        setProgressPercent(Math.round((i / batches.length) * 100));
 
-      if (res.success) {
-        // เมื่ออัปเดตไฟล์ลงเครื่องเสร็จ เปลี่ยนสถานะมารอรีพอร์ต
-        setIsWaitingReport(true);
-        setProgressText(`กำลังให้ AI สแกนใบหน้าและรอรีพอร์ต...`);
-
-        try {
-          const aiRes = await callAIForReportAction(eventId, res.folder_path!, res.uploadedFilenames!);
-          if (aiRes.success) {
-            // AI รับงานแล้ว ประมวลผลอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
-            await pollForCompletion();
-            return; // pollForCompletion จัดการ isUploading/isWaitingReport/router.refresh ให้แล้ว
-          } else {
-            setErrorMsg("อัปโหลดสำเร็จ แต่ " + aiRes.error);
-          }
-        } catch (e) {
-          setErrorMsg("การสแกนใบหน้าเชื่อมต่อไม่ได้ แต่ได้ส่งรูปลงงานแล้ว");
+        const batchFormData = new FormData();
+        for (const file of batch) {
+          batchFormData.append("photos", file);
         }
 
-        setTimeout(() => {
-          setIsUploading(false);
-          setIsWaitingReport(false);
-          router.refresh();
-        }, 3000);
-      } else {
-        setErrorMsg(res.error || "เกิดข้อผิดพลาดในการอัปโหลด");
-        setIsUploading(false);
+        const res = await uploadMultiplePhotosAction(eventId, batchFormData);
+        if (res.success) {
+          allUploadedFilenames.push(...(res.uploadedFilenames || []));
+          folderPath = res.folder_path;
+        } else {
+          uploadError = res.error || "เกิดข้อผิดพลาดในการอัปโหลด";
+          break;
+        }
       }
     } catch (err) {
+      uploadError = "เซิร์ฟเวอร์ไม่ตอบสนอง กรุณาลองใหม่น้า";
+    } finally {
       isSendingFilesRef.current = false;
-      setErrorMsg("เซิร์ฟเวอร์ไม่ตอบสนอง กรุณาลองใหม่น้า");
-      setIsUploading(false);
     }
 
-    // Reset input
+    setProgressPercent(100);
+    // เคลียร์ input ทันทีที่ request ถึง server แล้ว (ไม่ต้องรอ AI) เผื่อเลือกไฟล์ชุดเดิมซ้ำในรอบถัดไป
     if (fileInputRef.current) fileInputRef.current.value = "";
+
+    if (allUploadedFilenames.length === 0) {
+      setErrorMsg(uploadError || "เกิดข้อผิดพลาดในการอัปโหลด");
+      setIsUploading(false);
+      setIsWaitingReport(false);
+      return;
+    }
+
+    setProgressText(
+      uploadError
+        ? `อัปโหลดได้ ${allUploadedFilenames.length} รูป (มีบางส่วนไม่สำเร็จ) กำลังให้ AI สแกนใบหน้า...`
+        : `กำลังให้ AI สแกนใบหน้าและรอรีพอร์ต...`
+    );
+
+    try {
+      const aiRes = await callAIForReportAction(eventId, folderPath!, allUploadedFilenames);
+      if (aiRes.success) {
+        // AI รับงานแล้ว ประมวลผลอยู่เบื้องหลัง — poll ความคืบหน้าเป็นระยะ
+        await pollForCompletion();
+        if (uploadError) {
+          setErrorMsg(`มีบางรูปอัปโหลดไม่สำเร็จ: ${uploadError} (กรุณาอัปโหลดรูปที่เหลือใหม่)`);
+        }
+        return; // pollForCompletion จัดการ isUploading/isWaitingReport/router.refresh ให้แล้ว
+      } else {
+        setErrorMsg((uploadError ? `อัปโหลดได้บางส่วน (${uploadError}) และ ` : "อัปโหลดสำเร็จ แต่ ") + aiRes.error);
+      }
+    } catch (e) {
+      setErrorMsg("การสแกนใบหน้าเชื่อมต่อไม่ได้ แต่ได้ส่งรูปลงงานแล้ว");
+    }
+
+    setTimeout(() => {
+      setIsUploading(false);
+      setIsWaitingReport(false);
+      router.refresh();
+    }, 3000);
   };
 
   return (
