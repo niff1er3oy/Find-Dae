@@ -26,7 +26,7 @@ export default function PhotoGalleryClient({
   const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; id: number } | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+  const [prepProgress, setPrepProgress] = useState<{ processed: number; total: number } | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -63,54 +63,60 @@ export default function PhotoGalleryClient({
     });
   };
 
+  // \u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14\u0e41\u0e1a\u0e1a 2 \u0e08\u0e31\u0e07\u0e2b\u0e27\u0e30: \u0e2a\u0e31\u0e48\u0e07\u0e40\u0e0b\u0e34\u0e23\u0e4c\u0e1f\u0e40\u0e27\u0e2d\u0e23\u0e4c\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e44\u0e1f\u0e25\u0e4c zip \u0e43\u0e2b\u0e49\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e01\u0e48\u0e2d\u0e19 (poll \u0e14\u0e39\u0e04\u0e27\u0e32\u0e21\u0e04\u0e37\u0e1a\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e2a\u0e23\u0e49\u0e32\u0e07)
+  // \u0e41\u0e25\u0e49\u0e27\u0e04\u0e48\u0e2d\u0e22\u0e43\u0e2b\u0e49\u0e40\u0e1a\u0e23\u0e32\u0e27\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14\u0e44\u0e1f\u0e25\u0e4c\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08\u0e23\u0e39\u0e1b\u0e40\u0e2d\u0e07 \u2014 download manager \u0e02\u0e2d\u0e07\u0e40\u0e1a\u0e23\u0e32\u0e27\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c stream \u0e25\u0e07
+  // \u0e14\u0e34\u0e2a\u0e01\u0e4c\u0e15\u0e23\u0e07\u0e46 \u0e44\u0e21\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2d\u0e21\u0e44\u0e1f\u0e25\u0e4c\u0e17\u0e31\u0e49\u0e07\u0e01\u0e49\u0e2d\u0e19\u0e44\u0e27\u0e49\u0e43\u0e19 RAM \u0e02\u0e2d\u0e07\u0e41\u0e17\u0e47\u0e1a (\u0e44\u0e1f\u0e25\u0e4c\u0e2b\u0e25\u0e32\u0e22 GB \u0e17\u0e33\u0e41\u0e17\u0e47\u0e1a\u0e21\u0e37\u0e2d\u0e16\u0e37\u0e2d crash \u0e44\u0e14\u0e49)
+  // \u0e41\u0e16\u0e21\u0e42\u0e0a\u0e27\u0e4c %/\u0e40\u0e27\u0e25\u0e32\u0e17\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e37\u0e2d\u0e40\u0e2d\u0e07 \u0e41\u0e25\u0e30 resume \u0e15\u0e48\u0e2d\u0e44\u0e14\u0e49\u0e16\u0e49\u0e32\u0e40\u0e19\u0e47\u0e15\u0e2b\u0e25\u0e38\u0e14
   const handleDownloadAll = async () => {
     setIsDownloadingAll(true);
-    setDownloadProgress(null); // null = "\u0e01\u0e33\u0e25\u0e31\u0e07\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e44\u0e1f\u0e25\u0e4c..." (\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e23\u0e39\u0e49\u0e02\u0e19\u0e32\u0e14\u0e23\u0e27\u0e21/\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e40\u0e23\u0e34\u0e48\u0e21\u0e23\u0e31\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25)
+    setPrepProgress(null);
     try {
-      const res = await fetch(`/api/download-event/${eventId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoIds: photos.map(p => p.id) }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        alert(err.error || '\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08');
-        return;
-      }
-
-      const totalSize = Number(res.headers.get('X-Total-Size')) || 0;
-      const reader = res.body?.getReader();
-
-      let blob: Blob;
-      if (!reader) {
-        // \u0e40\u0e1a\u0e23\u0e32\u0e27\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c\u0e40\u0e01\u0e48\u0e32\u0e17\u0e35\u0e48\u0e44\u0e21\u0e48\u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a streaming reader \u2014 \u0e42\u0e2b\u0e25\u0e14\u0e17\u0e31\u0e49\u0e07\u0e01\u0e49\u0e2d\u0e19\u0e41\u0e1a\u0e1a\u0e40\u0e14\u0e34\u0e21 \u0e44\u0e21\u0e48\u0e21\u0e35 progress \u0e23\u0e30\u0e2b\u0e27\u0e48\u0e32\u0e07\u0e17\u0e32\u0e07
-        blob = await res.blob();
-      } else {
-        const chunks: BlobPart[] = [];
-        let received = 0;
-        setDownloadProgress(0);
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-          received += value.length;
-          // \u0e01\u0e31\u0e19\u0e44\u0e21\u0e48\u0e43\u0e2b\u0e49\u0e02\u0e36\u0e49\u0e19 100% \u0e15\u0e31\u0e49\u0e07\u0e41\u0e15\u0e48\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e08\u0e23\u0e34\u0e07 (zip \u0e21\u0e35 overhead \u0e40\u0e01\u0e34\u0e19\u0e02\u0e19\u0e32\u0e14\u0e44\u0e1f\u0e25\u0e4c\u0e14\u0e34\u0e1a\u0e40\u0e25\u0e47\u0e01\u0e19\u0e49\u0e2d\u0e22)
-          if (totalSize > 0) setDownloadProgress(Math.min(99, Math.round((received / totalSize) * 100)));
+      const prepare = async (): Promise<{ jobId: string; ready: boolean }> => {
+        const res = await fetch(`/api/download-event/${eventId}/prepare`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoIds: photos.map(p => p.id) }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || '\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e44\u0e1f\u0e25\u0e4c\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08');
         }
-        setDownloadProgress(100);
-        blob = new Blob(chunks, { type: 'application/zip' });
-      }
+        return res.json();
+      };
 
+      let { jobId, ready } = await prepare();
+
+      // poll \u0e2a\u0e16\u0e32\u0e19\u0e30\u0e08\u0e19\u0e44\u0e1f\u0e25\u0e4c\u0e1e\u0e23\u0e49\u0e2d\u0e21 (\u0e40\u0e1e\u0e14\u0e32\u0e19 ~15 \u0e19\u0e32\u0e17\u0e35 \u0e01\u0e31\u0e19\u0e27\u0e19\u0e44\u0e21\u0e48\u0e23\u0e39\u0e49\u0e08\u0e1a)
+      let reprepared = 0;
+      for (let attempt = 0; !ready && attempt < 600; attempt++) {
+        await new Promise(r => setTimeout(r, 1500));
+        const res = await fetch(`/api/download-event/${eventId}/status?job=${jobId}`);
+        if (!res.ok) throw new Error('\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08');
+        const s = await res.json();
+        if (s.status === 'ready') { ready = true; break; }
+        if (s.status === 'error') throw new Error(s.error || '\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e44\u0e1f\u0e25\u0e4c\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08');
+        if (s.status === 'unknown') {
+          // \u0e40\u0e0b\u0e34\u0e23\u0e4c\u0e1f\u0e40\u0e27\u0e2d\u0e23\u0e4c restart \u0e23\u0e30\u0e2b\u0e27\u0e48\u0e32\u0e07\u0e2a\u0e23\u0e49\u0e32\u0e07 \u0e2b\u0e23\u0e37\u0e2d\u0e44\u0e1f\u0e25\u0e4c\u0e16\u0e39\u0e01\u0e25\u0e1a\u0e44\u0e1b\u0e41\u0e25\u0e49\u0e27 \u2014 \u0e2a\u0e31\u0e48\u0e07\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e43\u0e2b\u0e21\u0e48 (\u0e08\u0e33\u0e01\u0e31\u0e14\u0e04\u0e23\u0e31\u0e49\u0e07\u0e01\u0e31\u0e19\u0e27\u0e19\u0e25\u0e39\u0e1b)
+          if (++reprepared > 2) throw new Error('\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e44\u0e1f\u0e25\u0e4c\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u0e01\u0e23\u0e38\u0e13\u0e32\u0e25\u0e2d\u0e07\u0e43\u0e2b\u0e21\u0e48\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07');
+          ({ jobId, ready } = await prepare());
+          continue;
+        }
+        if (typeof s.total === 'number' && s.total > 0) {
+          setPrepProgress({ processed: s.processed ?? 0, total: s.total });
+        }
+      }
+      if (!ready) throw new Error('\u0e23\u0e2d\u0e19\u0e32\u0e19\u0e40\u0e01\u0e34\u0e19\u0e44\u0e1b \u0e01\u0e23\u0e38\u0e13\u0e32\u0e25\u0e2d\u0e07\u0e43\u0e2b\u0e21\u0e48\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07');
+
+      // \u0e44\u0e1f\u0e25\u0e4c\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e41\u0e25\u0e49\u0e27 \u2014 \u0e08\u0e38\u0e14\u0e25\u0e34\u0e07\u0e01\u0e4c\u0e43\u0e2b\u0e49\u0e40\u0e1a\u0e23\u0e32\u0e27\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c\u0e40\u0e23\u0e34\u0e48\u0e21\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14\u0e40\u0e2d\u0e07 (Content-Disposition \u0e1d\u0e31\u0e48\u0e07\u0e40\u0e0b\u0e34\u0e23\u0e4c\u0e1f\u0e40\u0e27\u0e2d\u0e23\u0e4c
+      // \u0e17\u0e33\u0e43\u0e2b\u0e49\u0e44\u0e21\u0e48 navigate \u0e2d\u0e2d\u0e01\u0e08\u0e32\u0e01\u0e2b\u0e19\u0e49\u0e32) \u0e04\u0e27\u0e32\u0e21\u0e04\u0e37\u0e1a\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e25\u0e31\u0e07\u0e08\u0e32\u0e01\u0e19\u0e35\u0e49\u0e14\u0e39\u0e17\u0e35\u0e48\u0e41\u0e16\u0e1a\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14\u0e02\u0e2d\u0e07\u0e40\u0e1a\u0e23\u0e32\u0e27\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `event_${eventId}_photos.zip`;
+      a.href = `/api/download-event/${eventId}/file?job=${jobId}`;
       a.click();
-      URL.revokeObjectURL(a.href);
-    } catch {
-      alert('\u0e40\u0e01\u0e34\u0e14\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e43\u0e19\u0e01\u0e32\u0e23\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '\u0e40\u0e01\u0e34\u0e14\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e43\u0e19\u0e01\u0e32\u0e23\u0e14\u0e32\u0e27\u0e42\u0e2b\u0e25\u0e14');
     } finally {
       setIsDownloadingAll(false);
-      setDownloadProgress(null);
+      setPrepProgress(null);
     }
   };
 
@@ -129,14 +135,16 @@ export default function PhotoGalleryClient({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
                 <span className="truncate">
-                  {downloadProgress === null ? 'กำลังเตรียมไฟล์...' : `กำลังดาวโหลด... ${downloadProgress}%`}
+                  {prepProgress
+                    ? `กำลังเตรียมไฟล์... ${prepProgress.processed}/${prepProgress.total} รูป`
+                    : 'กำลังเตรียมไฟล์...'}
                 </span>
               </div>
-              {downloadProgress !== null && (
+              {prepProgress && (
                 <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-accent-orange rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${downloadProgress}%` }}
+                    style={{ width: `${Math.round((prepProgress.processed / prepProgress.total) * 100)}%` }}
                   />
                 </div>
               )}
