@@ -11,6 +11,18 @@ import { generateWebpVariant, getWebpPath } from '@/lib/webp';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
+// fs เขียนไฟล์ปกติไม่มี timeout ในตัว ถ้า disk/mount ที่ UPLOAD_DIR ชี้ไปมีปัญหา
+// (เช่น network mount หลุด) จะค้างเป็น Pending ตลอดไปฝั่ง client โดยไม่มี error ให้จับ
+// wrap ไว้กันค้าง เช่นเดียวกับที่ทำกับ generateWebpVariant และ pool.query แล้ว
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
+    ),
+  ]);
+}
+
 interface PhotoRow extends RowDataPacket {
   id: number;
   image_path: string;
@@ -18,6 +30,7 @@ interface PhotoRow extends RowDataPacket {
 }
 
 export async function uploadMultiplePhotosAction(eventId: string, formData: FormData) {
+  console.log(`[upload event=${eventId}] request received, checking auth`);
   const user = await getUserAction();
 
   // 1. ตรวจสอบสิทธิ์ (ต้องเป็นตากล้องเท่านั้น)
@@ -25,6 +38,7 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
     return { success: false, error: 'เฉพาะตากล้องเท่านั้นที่สามารถอัปโหลดรูปลงงานนี้ได้' };
   }
 
+  console.log(`[upload event=${eventId}] auth ok (user=${user.id}), checking role`);
   const role = await checkEventRoleAction(eventId);
   if (role === 'none') {
     return { success: false, error: 'คุณยังไม่ได้ถูกเชิญให้เป็นผู้ดูแลร่วมในงานนี้ จึงไม่สามารถอัปโหลดได้' };
@@ -47,10 +61,12 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
     return { success: false, error: 'พบรูปภาพที่มีขนาดเกิน 5MB อยู่ในรายการ กรุณาตรวจสอบแล้วลองอัปโหลดภาพที่ผ่านเกณฑ์เท่านั้น' };
   }
 
+  const logPrefix = `[upload event=${eventId}]`;
   try {
     // 4. เตรียมโฟลเดอร์สำหรับงานนี้
     const eventPhotosDir = path.join(UPLOAD_DIR_BASE, String(eventId));
-    await mkdir(eventPhotosDir, { recursive: true });
+    console.log(`${logPrefix} mkdir ${eventPhotosDir}`);
+    await withTimeout(mkdir(eventPhotosDir, { recursive: true }), 10000, 'mkdir');
 
     // 5. เตรียมคำสั่ง SQL แบบ Multiple Insert เพื่อประสิทธิภาพการทำงาน
     let sqlValues = [];
@@ -59,6 +75,7 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 
     for (let i = 0; i < validFiles.length; i++) {
       const file = validFiles[i];
+      console.log(`${logPrefix} [${i + 1}/${validFiles.length}] reading "${file.name}" (${file.size} bytes)`);
 
       // อ่านไฟล์
       const bytes = await file.arrayBuffer();
@@ -70,9 +87,12 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
       const filePath = path.join(eventPhotosDir, filename);
 
       // เขียนไฟล์ลง Local Drive
-      await writeFile(filePath, buffer);
+      console.log(`${logPrefix} [${i + 1}/${validFiles.length}] writing ${filePath}`);
+      await withTimeout(writeFile(filePath, buffer), 15000, 'writeFile');
       // สร้างไฟล์ .webp คู่กันไว้สำหรับแสดงผล ต้นฉบับยังอยู่ครบสำหรับดาวน์โหลด
+      console.log(`${logPrefix} [${i + 1}/${validFiles.length}] generating webp`);
       await generateWebpVariant(filePath);
+      console.log(`${logPrefix} [${i + 1}/${validFiles.length}] done`);
 
       // เตรียมข้อมูลชุด Insert ลง DB
       sqlValues.push('(?, ?, ?, NOW())');
@@ -82,10 +102,12 @@ export async function uploadMultiplePhotosAction(eventId: string, formData: Form
 
     // 6. รัน SQL INSERT ข้อมูลหลายแถวรวดเดียว
     if (sqlValues.length > 0) {
+      console.log(`${logPrefix} inserting ${sqlValues.length} rows`);
       const sqlQuery = `INSERT INTO photos (image_path, event_id, photographer_id, created_at) VALUES ${sqlValues.join(', ')}`;
       await pool.query(sqlQuery, bindParams);
     }
 
+    console.log(`${logPrefix} success`);
     return {
       success: true,
       message: `อัปโหลดจำนวน ${validFiles.length} รูปเรียบร้อยแล้ว!`,
